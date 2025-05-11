@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Team {
+  id               Int               @id @default(autoincrement())
+  name             String
+  participants     Participant[]
+  scores           Score[]
+  roundAssignments RoundAssignment[] @relation("AssignmentTeams")
+}
+
+model Participant {
+  id     Int     @id @default(autoincrement())
+  name   String
+  email  String  @unique
+  team   Team    @relation(fields: [teamId], references: [id])
+  teamId Int
+  scores Score[]
+}
+
+model Judge {
+  id          Int               @id @default(autoincrement())
+  name        String
+  email       String            @unique
+  password    String // hashed
+  assignments RoundAssignment[]
+  scores      Score[]
+}
+
+model Room {
+  id          Int               @id @default(autoincrement())
+  name        String
+  assignments RoundAssignment[]
+}
+
+model Round {
+  id          Int               @id @default(autoincrement())
+  name        String // e.g. "Preliminary 1", "Semifinal"
+  number      Int // 1, 2, 3, 4 (semi), 5 (final)
+  assignments RoundAssignment[]
+  Score       Score[]
+}
+
+model RoundAssignment {
+  id      Int    @id @default(autoincrement())
+  round   Round  @relation(fields: [roundId], references: [id])
+  roundId Int
+  room    Room   @relation(fields: [roomId], references: [id])
+  roomId  Int
+  judge   Judge? @relation(fields: [judgeId], references: [id])
+  judgeId Int?
+  teams   Team[] @relation("AssignmentTeams")
+}
+
+model Score {
+  id            Int          @id @default(autoincrement())
+  judge         Judge        @relation(fields: [judgeId], references: [id])
+  judgeId       Int
+  round         Round        @relation(fields: [roundId], references: [id])
+  roundId       Int
+  team          Team         @relation(fields: [teamId], references: [id])
+  teamId        Int
+  participant   Participant? @relation(fields: [participantId], references: [id])
+  participantId Int?
+  scoreType     ScoreType // TEAM or INDIVIDUAL
+  value         Float
+}
+
+enum ScoreType {
+  TEAM
+  INDIVIDUAL
+}
