@@ -1,8 +1,5 @@
-import { SidebarDemo } from "src/components/molecules/sidebarDemo";
-import Image from "next/image";
+import { Dashboard } from 'src/components/molecules/dashboard';
 
 export default function Home() {
-  return (
-    <SidebarDemo></SidebarDemo>
-  );
+  return <Dashboard />;
 }

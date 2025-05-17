@@ -13,6 +13,7 @@ model Team {
   participants     Participant[]
   scores           Score[]
   roundAssignments RoundAssignment[] @relation("AssignmentTeams")
+  matchResults     MatchResult[]
 }
 
 model Participant {
@@ -22,6 +23,7 @@ model Participant {
   team   Team    @relation(fields: [teamId], references: [id])
   teamId Int
   scores Score[]
+  participantAssignments ParticipantAssignment[]
 }
 
 model Judge {
@@ -48,14 +50,15 @@ model Round {
 }
 
 model RoundAssignment {
-  id      Int    @id @default(autoincrement())
-  round   Round  @relation(fields: [roundId], references: [id])
-  roundId Int
-  room    Room   @relation(fields: [roomId], references: [id])
-  roomId  Int
-  judge   Judge? @relation(fields: [judgeId], references: [id])
-  judgeId Int?
-  teams   Team[] @relation("AssignmentTeams")
+  id        String           @id @default(cuid())
+  round     Round            @relation(fields: [roundId], references: [id])
+  roundId   String
+  room      Room             @relation(fields: [roomId], references: [id])
+  roomId    String
+  judge     Judge?           @relation(fields: [judgeId], references: [id])
+  judgeId   String?
+  matchResults MatchResult[] // hubungan baru
+  teamAssignments TeamAssignment[] // NEW: relasi ke posisi tim
 }
 
 model Score {
@@ -70,6 +73,37 @@ model Score {
   participantId Int?
   scoreType     ScoreType // TEAM or INDIVIDUAL
   value         Float
+}
+
+model MatchResult {
+  id                Int             @id @default(autoincrement())
+  roundAssignment   RoundAssignment @relation(fields: [roundAssignmentId], references: [id])
+  roundAssignmentId Int
+  team              Team            @relation(fields: [teamId], references: [id])
+  teamId            Int
+  rank              Int // 1 to 4
+  points            Int // usually 3, 2, 1, 0
+  participantAssignments ParticipantAssignment[]
+}
+
+model ParticipantAssignment {
+  id             String       @id @default(cuid())
+  participant    Participant  @relation(fields: [participantId], references: [id])
+  participantId  Int
+  matchResult    MatchResult  @relation(fields: [matchResultId], references: [id])
+  matchResultId  Int
+  role           DebateRole
+}
+
+enum DebateRole {
+  PrimeMinister
+  DeputyPrimeMinister
+  LeaderOfOpposition
+  DeputyLeaderOfOpposition
+  MemberOfGovernment
+  GovernmentWhip
+  MemberOfOpposition
+  OppositionWhip
 }
 
 enum ScoreType {
