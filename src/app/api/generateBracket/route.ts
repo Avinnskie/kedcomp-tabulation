@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
+import { DebatePosition } from '@prisma/client';
 
 export async function POST(req: Request) {
   try {
@@ -20,9 +21,7 @@ export async function POST(req: Request) {
       );
     }
 
-    // If round doesn't exist, create it
     if (!round) {
-      // Create round names based on number
       let roundName = 'Preliminary';
       if (roundNumber === 4) {
         roundName = 'Semifinal';
@@ -48,7 +47,6 @@ export async function POST(req: Request) {
       }
     }
 
-    // Get all teams
     let teams;
     try {
       teams = await prisma.team.findMany();
@@ -76,7 +74,6 @@ export async function POST(req: Request) {
       );
     }
 
-    // Shuffle teams
     const shuffled = [...teams].sort(() => Math.random() - 0.5);
 
     let rooms;
@@ -104,59 +101,84 @@ export async function POST(req: Request) {
       );
     }
 
-    // Get judges for assignments
     let judges;
     try {
       judges = await prisma.judge.findMany();
       console.log(`[INFO] Found ${judges.length} judges in the database`);
     } catch (judgesError: any) {
       console.error('[ERROR] Failed to retrieve judges:', judgesError);
-      // We'll continue even if we can't get judges, they're optional
       judges = [];
     }
-    
+
     let idx = 0;
     let createdAssignments = 0;
-    
-    // Process each room and create assignments
+
     for (const room of rooms) {
-      // Get 4 teams for this room
       const roomTeams = shuffled.slice(idx, idx + 4);
       if (roomTeams.length < 4) {
         console.log(`[INFO] Not enough teams left for room ${room.name}, stopping`);
         break;
       }
 
-      // Select a judge if available (based on room index)
       const judgeIndex = Math.floor(idx / 4);
       const judge = judgeIndex < judges.length ? judges[judgeIndex] : null;
-      
+
       console.log(
         `[INFO] Assigning to room ${room.name} (id: ${room.id}):`,
         roomTeams.map(t => `${t.name} (id: ${t.id})`),
         judge ? `with Judge: ${judge.name} (id: ${judge.id})` : 'without a judge'
       );
-      
+
       try {
-        // Create the assignment
-        await prisma.roundAssignment.create({
+        const roundAssignment = await prisma.roundAssignment.create({
           data: {
             roundId: round.id,
             roomId: room.id,
             judgeId: judge?.id || null,
-            teams: {
-              connect: roomTeams.map(t => ({ id: t.id })),
-            },
           },
         });
-        
+
+        const positions = [
+          DebatePosition.OG,
+          DebatePosition.OO,
+          DebatePosition.CG,
+          DebatePosition.CO
+        ];
+
+        for (let i = 0; i < 4; i++) {
+          const team = roomTeams[i];
+
+          try {
+            await prisma.teamAssignment.create({
+              data: {
+                teamId: team.id,
+                roundAssignmentId: roundAssignment.id,
+                position: positions[i],
+              },
+            });
+
+            console.log(
+              `[INFO] Assigned team ${team.name} (id: ${team.id}) as ${positions[i]} in room ${room.name}`
+            );
+          } catch (teamAssignmentError: any) {
+            console.error(
+              `[ERROR] Failed to assign team ${team.name} to position ${positions[i]}:`,
+              teamAssignmentError
+            );
+            // Bisa lanjut ke tim lain meskipun satu gagal
+          }
+        }
+
         createdAssignments++;
         console.log(`[INFO] Successfully created assignment for room ${room.name}`);
       } catch (assignmentError: any) {
-        console.error(`[ERROR] Failed to create assignment for room ${room.name}:`, assignmentError);
+        console.error(
+          `[ERROR] Failed to create assignment for room ${room.name}:`,
+          assignmentError
+        );
         // Continue trying other rooms instead of failing the entire process
       }
-      
+
       // Move to the next 4 teams
       idx += 4;
     }

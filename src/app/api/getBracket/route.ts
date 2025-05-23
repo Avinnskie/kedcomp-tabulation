@@ -9,7 +9,11 @@ export async function GET(req: Request) {
           include: {
             room: true,
             judge: true,
-            teams: true,
+            teamAssignments: {
+              include: {
+                team: true,
+              },
+            },
           },
         },
       },

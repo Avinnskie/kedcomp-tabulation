@@ -8,7 +8,7 @@ import Image from 'next/image';
 
 const montserrat = Montserrat({
   subsets: ['latin'],
-  weight: ['400', '700'], // Pastikan sesuai dengan yang tersedia
+  weight: ['400', '500', '700'], // Pastikan sesuai dengan yang tersedia
   variable: '--font-montserrat',
 });
 
@@ -37,7 +37,7 @@ export default function RootLayout({ children }) {
     },
     {
       label: 'Tabulation',
-      href: '#',
+      href: '/tabulation',
       icon: <Scale className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
     },
   ];

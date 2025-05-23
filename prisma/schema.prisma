@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "./node_modules/.prisma/client"
 }
 
 datasource db {
@@ -12,8 +13,8 @@ model Team {
   name             String
   participants     Participant[]
   scores           Score[]
-  roundAssignments RoundAssignment[] @relation("AssignmentTeams")
   matchResults     MatchResult[]
+  teamAssignments  TeamAssignment[]
 }
 
 model Participant {
@@ -23,7 +24,6 @@ model Participant {
   team   Team    @relation(fields: [teamId], references: [id])
   teamId Int
   scores Score[]
-  participantAssignments ParticipantAssignment[]
 }
 
 model Judge {
@@ -50,15 +50,15 @@ model Round {
 }
 
 model RoundAssignment {
-  id        String           @id @default(cuid())
-  round     Round            @relation(fields: [roundId], references: [id])
-  roundId   String
-  room      Room             @relation(fields: [roomId], references: [id])
-  roomId    String
-  judge     Judge?           @relation(fields: [judgeId], references: [id])
-  judgeId   String?
-  matchResults MatchResult[] // hubungan baru
-  teamAssignments TeamAssignment[] // NEW: relasi ke posisi tim
+  id              Int               @id @default(autoincrement())
+  round           Round             @relation(fields: [roundId], references: [id])
+  roundId         Int
+  room            Room              @relation(fields: [roomId], references: [id])
+  roomId          Int
+  judge           Judge?            @relation(fields: [judgeId], references: [id])
+  judgeId         Int?
+  matchResults    MatchResult[]
+  teamAssignments TeamAssignment[]
 }
 
 model Score {
@@ -76,34 +76,29 @@ model Score {
 }
 
 model MatchResult {
-  id                Int             @id @default(autoincrement())
-  roundAssignment   RoundAssignment @relation(fields: [roundAssignmentId], references: [id])
-  roundAssignmentId Int
-  team              Team            @relation(fields: [teamId], references: [id])
-  teamId            Int
-  rank              Int // 1 to 4
-  points            Int // usually 3, 2, 1, 0
-  participantAssignments ParticipantAssignment[]
+  id                    Int                    @id @default(autoincrement())
+  roundAssignment       RoundAssignment        @relation(fields: [roundAssignmentId], references: [id])
+  roundAssignmentId     Int
+  team                  Team                   @relation(fields: [teamId], references: [id])
+  teamId                Int
+  rank                  Int                    // 1 to 4
+  points                Int                    // usually 3, 2, 1, 0
 }
 
-model ParticipantAssignment {
-  id             String       @id @default(cuid())
-  participant    Participant  @relation(fields: [participantId], references: [id])
-  participantId  Int
-  matchResult    MatchResult  @relation(fields: [matchResultId], references: [id])
-  matchResultId  Int
-  role           DebateRole
+model TeamAssignment {
+  id                 Int    @id @default(autoincrement())
+  teamId             Int
+  team               Team @relation (fields: [teamId], references: [id])
+  roundAssignmentId  Int
+  roundAssignment    RoundAssignment @relation(fields: [roundAssignmentId], references: [id])
+  position           DebatePosition
 }
 
-enum DebateRole {
-  PrimeMinister
-  DeputyPrimeMinister
-  LeaderOfOpposition
-  DeputyLeaderOfOpposition
-  MemberOfGovernment
-  GovernmentWhip
-  MemberOfOpposition
-  OppositionWhip
+enum DebatePosition {
+    OG
+    OO
+    CG
+    CO
 }
 
 enum ScoreType {

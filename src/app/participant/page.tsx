@@ -45,7 +45,7 @@ export default function ParticipantPage() {
             <TableRow key={parti.id}>
               <TableCell className="font-medium">{i + 1}</TableCell>
               <TableCell>{parti.name}</TableCell>
-              <TableCell>{parti.team.name}</TableCell>
+            <TableCell>{parti.team.name}</TableCell>
             </TableRow>
           ))}
         </TableBody>

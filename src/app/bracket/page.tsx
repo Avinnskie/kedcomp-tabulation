@@ -19,31 +19,50 @@ export default function BracketPage() {
         This bracket is to display which room all participants will be in.
       </p>
 
-      {rounds.map(round => (
-        <div key={round.id} className="mb-8">
-          <h2 className="text-xl font-semibold mb-2">Round {round.number}</h2>
+      {rounds.length === 0 ? (
+        <p className="text-muted-foreground">There is no bracket available yet.</p>
+      ) : (
+        rounds.map(round => (
+          <div key={round.id} className="mb-8 grid grid-cols-2 gap-2">
+            {round.assignments?.map((a: any, i: number) => (
+              <div
+                key={i}
+                className="border p-4 rounded-xl shadow-md bg-white hover:shadow-lg transition-all"
+              >
+                <div className="flex flex-col items-center mb-2">
+                  <span className="text-sm">Room</span>
+                  <span className="text-xl font-semibold">{a.room.name}</span>
+                  {/* <span className="text-sm text-gray-500">Judge: {a.judge?.name || 'TBA'}</span> */}
+                </div>
+                <div className="grid grid-cols-2 space-y-1">
+                  {a.teamAssignments.map((ta: any, idx: number) => {
+                    const posColor =
+                      {
+                        OG: 'text-yellow-600',
+                        OO: 'text-red-600',
+                        CG: 'text-green-600',
+                        CO: 'text-blue-600',
+                      }[ta.position] || 'text-gray-800';
 
-          {round.assignments.map((a: any, i: number) => (
-            <div key={i} className="border p-4 mb-2 rounded shadow bg-white">
-              <p>
-                <strong>Room:</strong> {a.room.name}
-              </p>
-              <p>
-                <strong>Judge:</strong> {a.judge?.name || 'TBA'}
-              </p>
-              <p>
-                <strong>Teams:</strong> {a.teams.map((t: any) => t.name).join(', ')}
-              </p>
-            </div>
-          ))}
-        </div>
-      ))}
+                    return (
+                      <div key={idx} className={`text-center flex flex-col font-medium`}>
+                        <h5 className="text-sm">{ta.position}</h5>
+                        <h2 className="text-[16px] font-medium">{ta.team.name}</h2>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        ))
+      )}
 
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>
             <button
-              className="fixed bottom-8 right-10 z-50 py-3 px-3 text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 transition-colors"
+              className="fixed bottom-8 right-10 z-50 py-3 px-3 text-white bg-blue-500 rounded-full shadow-lg hover:bg-blue-600 transition-colors cursor-pointer"
               onClick={async () => {
                 await fetch('/api/generateBracket', {
                   method: 'POST',
