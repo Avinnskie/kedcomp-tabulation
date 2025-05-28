@@ -2,20 +2,30 @@
 
 import { signIn } from 'next-auth/react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
 
-  async function handleLogin(e: React.FormEvent) {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    await signIn('credentials', {
+    const res = await signIn('credentials', {
       email,
       password,
-      callbackUrl: '/dashboard',
+      redirect: false,
     });
-  }
+
+    if (res?.ok) {
+      // role-based redirect bisa disimpan di session atau ambil ulang di client
+      router.push('/'); // sementara push ke dashboard, nanti kita bikin redirect role-based
+    } else {
+      setError('Invalid credentials');
+    }
+  };
 
   return (
     <div className="flex w-full h-screen justify-center">
