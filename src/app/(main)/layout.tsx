@@ -38,7 +38,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <div
       className={cn(
-        'flex w-full flex-1 flex-col overflow-hidden rounded-md border border-neutral-500 bg- md:flex-row dark:border-neutral-700 dark:bg-neutral-800',
+        'flex w-full flex-1 flex-col overflow-hidden rounded-md border border-neutral-500 md:flex-row dark:border-neutral-700 dark:bg-neutral-800',
         'min-h-screen'
       )}
     >
@@ -71,7 +71,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           </div>
         </SidebarBody>
       </Sidebar>
-      {children}
+      <div className="w-full md:ml-[200px]">{children}</div>
     </div>
   );
 }

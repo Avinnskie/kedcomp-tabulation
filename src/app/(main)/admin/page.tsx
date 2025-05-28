@@ -75,7 +75,7 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="md:ml-[200px] w-full p-6 bg-white space-y-6">
+    <div className="w-full p-6 bg-white space-y-6">
       <div className="mt-5">
         <h1 className="text-2xl font-semibold mb-4">Adding new teams and their participation</h1>
         <form onSubmit={handleSubmit} className="space-y-4">

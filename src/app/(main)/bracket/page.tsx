@@ -13,7 +13,7 @@ export default function BracketPage() {
       .then(data => setRounds(data.rounds));
   }, []);
   return (
-    <div className="w-full relative p-5 md:ml-[200px]">
+    <div className="w-full relative p-5">
       <h1 className="text-2xl font-bold">Bracket KEDCOMP 2025</h1>
       <p className="text-muted-foreground mb-6">
         This bracket is to display which room all participants will be in.

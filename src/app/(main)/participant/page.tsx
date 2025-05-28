@@ -30,7 +30,7 @@ export default function ParticipantPage() {
     fetchParticipants();
   }, []);
   return (
-    <div className="w-full md:ml-[200px] p-6">
+    <div className="w-full p-6">
       <h5 className="text-xl font-medium">List Participant KEDCOMP 2025</h5>
       <Table className={'mt-2'}>
         <TableHeader>
@@ -45,7 +45,7 @@ export default function ParticipantPage() {
             <TableRow key={parti.id}>
               <TableCell className="font-medium">{i + 1}</TableCell>
               <TableCell>{parti.name}</TableCell>
-            <TableCell>{parti.team.name}</TableCell>
+              <TableCell>{parti.team.name}</TableCell>
             </TableRow>
           ))}
         </TableBody>
