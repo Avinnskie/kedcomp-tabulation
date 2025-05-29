@@ -9,6 +9,7 @@ async function main() {
     update: {},
     create: {
       email: 'admin@kedcomp.com',
+      name: 'Admin User',
       password: await hash('admin123', 10),
       role: 'ADMIN',
     },
@@ -19,12 +20,21 @@ async function main() {
     update: {},
     create: {
       email: 'juri@kedcomp.com',
+      name: 'Juri User',
       password: await hash('juri123', 10),
-      role: 'JURI',
+      role: 'JUDGE',
     },
   });
 
   console.log({ admin, juri });
 }
 
-main();
+main()
+  .catch((e) => {
+    console.error('Error during seeding:', e);
+    process.exit(1);
+  })
+  .finally(async () => {
+    // Close Prisma client connection
+    await prisma.$disconnect();
+  });

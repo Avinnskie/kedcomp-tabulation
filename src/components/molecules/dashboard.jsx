@@ -1,3 +1,4 @@
+'use client';
 import React from 'react';
 import { BentoGrid, BentoGridItem } from '../ui/bento-grid';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
@@ -12,10 +13,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Activity, Clock, Medal, School, User, Users } from 'lucide-react';
+import { useSession } from 'next-auth/react';
 
 export function Dashboard() {
+  const { data: session } = useSession();
   return (
-    <div className="flex flex-col w-full md:ml-[200px]">
+    <div className="flex flex-col w-full">
+      <div>Hello, {session?.user?.name ?? 'Guest'}!</div>
       <BentoGrid className="min-h-screen p-5">
         {items.map((item, i) => (
           <BentoGridItem
