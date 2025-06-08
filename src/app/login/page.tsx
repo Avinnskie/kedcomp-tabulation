@@ -4,6 +4,7 @@ import { signIn } from 'next-auth/react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { toast } from 'sonner';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,7 +24,7 @@ export default function LoginPage() {
       // role-based redirect bisa disimpan di session atau ambil ulang di client
       router.push('/'); // sementara push ke dashboard, nanti kita bikin redirect role-based
     } else {
-      setError('Invalid credentials');
+      toast.error('Email atau Password salah!');
     }
   };
 
@@ -57,7 +58,7 @@ export default function LoginPage() {
             onChange={e => setPassword(e.target.value)}
           />
           <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded">
-            Login
+            Login to your account!
           </button>
         </form>
       </div>
