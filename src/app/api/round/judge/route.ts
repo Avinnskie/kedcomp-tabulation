@@ -6,7 +6,7 @@ import { authOptions } from '../../auth/[...nextauth]/route';
 export async function GET() {
   const session = await getServerSession(authOptions);
 
-  if (!session || !session.user?.email) {
+  if (!session?.user?.email) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -20,25 +20,66 @@ export async function GET() {
 
   const judge = await prisma.judge.findUnique({
     where: { userId: user.id },
-    include: {
-      assignments: {
-        include: {
-          round: true,
-          room: true,
-          teamAssignments: {
-            include: {
-              team: true,
-            },
-          },
-        },
-        orderBy: { round: { number: 'asc' } },
-      },
-    },
   });
 
   if (!judge) {
     return NextResponse.json({ error: 'Judge not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ rounds: judge.assignments });
+  const judgeId = judge.id;
+
+  // Ambil semua round assignment untuk semifinal & grand final
+  const assignments = await prisma.roundAssignment.findMany({
+    where: {
+      OR: [
+        { judgeId }, // semifinal
+        { judges: { some: { id: judgeId } } }, // grand final
+      ],
+    },
+    include: {
+      round: true,
+      room: true,
+      teamAssignments: {
+        include: {
+          team: true,
+        },
+      },
+    },
+    orderBy: {
+      round: { number: 'asc' },
+    },
+  });
+
+  // Cek status nilai (isScored)
+  const rounds = await Promise.all(
+    assignments.map(async assignment => {
+      const scoreCount = await prisma.score.count({
+        where: {
+          roundId: assignment.roundId,
+          judgeId: judgeId,
+        },
+      });
+
+      return {
+        id: assignment.id,
+        round: {
+          name: assignment.round.name,
+          number: assignment.round.number,
+        },
+        room: {
+          name: assignment.room.name,
+        },
+        teamAssignments: assignment.teamAssignments.map(ta => ({
+          team: {
+            id: ta.team.id,
+            name: ta.team.name,
+          },
+          position: ta.position,
+        })),
+        isScored: scoreCount > 0,
+      };
+    })
+  );
+
+  return NextResponse.json({ rounds });
 }
