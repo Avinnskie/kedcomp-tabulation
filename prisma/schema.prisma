@@ -42,6 +42,7 @@ model Judge {
   user        User              @relation(fields: [userId], references: [id])
   assignments RoundAssignment[]
   scores      Score[]
+  grandFinals    RoundAssignment[]  @relation("GrandFinalJudges")
 }
 
 model Room {
@@ -66,6 +67,7 @@ model RoundAssignment {
   roomId          Int
   judge           Judge?           @relation(fields: [judgeId], references: [id])
   judgeId         Int?
+  judges Judge[] @relation("GrandFinalJudges")
   matchResults    MatchResult[]
   teamAssignments TeamAssignment[]
 }
