@@ -135,7 +135,7 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
                     <div className="ml-2 mt-1 flex flex-col gap-1">
                       <SidebarLink
                         link={{
-                          label: 'Manage Users',
+                          label: 'Settings',
                           href: '/admin',
                           icon: <User className="h-4 w-4 text-neutral-500" />,
                         }}
@@ -180,10 +180,10 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
               )}
             </div>
           </div>
-          <div className="px-3 py-2">
+          <div className="py-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center w-full gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded px-2 py-2 transition-all">
+                <button className="flex items-center w-full gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded py-2 transition-all">
                   <img
                     src={user?.image ?? '/logo-kdc.png'}
                     className="h-7 w-7 shrink-0 rounded-full object-cover"

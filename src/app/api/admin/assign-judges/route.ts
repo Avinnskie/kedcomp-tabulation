@@ -16,7 +16,7 @@ export async function GET() {
         round: true,
         room: true,
         judge: true,
-        judges: true, // ini array untuk grand final
+        judges: true,
       },
     });
 
@@ -51,10 +51,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     if (!Array.isArray(body)) {
-      return NextResponse.json(
-        { error: 'Format body tidak valid. Harus berupa array.' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Body must be an array.' }, { status: 400 });
     }
 
     for (const entry of body) {
@@ -67,14 +64,14 @@ export async function POST(req: NextRequest) {
 
       if (!assignment) continue;
 
-      // Update ruangan
+      // Update room
       await prisma.roundAssignment.update({
         where: { id: assignmentId },
         data: { roomId },
       });
 
-      // Semifinal (1 juri biasa)
       if (assignment.round.number === 4) {
+        // Semifinal: 1 judge
         await prisma.roundAssignment.update({
           where: { id: assignmentId },
           data: {
@@ -83,33 +80,33 @@ export async function POST(req: NextRequest) {
         });
       }
 
-      // Grand Final (3 juri)
       if (assignment.round.number === 5) {
-        // Hapus juri lama
+        // Grand Final: 1 judge
         await prisma.roundAssignment.update({
           where: { id: assignmentId },
           data: {
-            judges: { set: [] }, // clear existing
+            judges: { set: [] }, // clear
           },
         });
 
-        // Tambahkan juri baru
-        await prisma.roundAssignment.update({
-          where: { id: assignmentId },
-          data: {
-            judges: {
-              connect: (judgeIds || []).map((id: number) => ({ id })),
+        if (judgeIds?.[0]) {
+          await prisma.roundAssignment.update({
+            where: { id: assignmentId },
+            data: {
+              judges: {
+                connect: [{ id: judgeIds[0] }],
+              },
             },
-          },
-        });
+          });
+        }
       }
     }
 
     return NextResponse.json({
-      message: 'Penugasan juri dan ruangan berhasil diperbarui',
+      message: 'Judges & rooms updated successfully',
     });
   } catch (err) {
     console.error('[POST /api/admin/assign-judges]', err);
-    return NextResponse.json({ error: 'Terjadi kesalahan saat memperbarui data' }, { status: 500 });
+    return NextResponse.json({ error: 'An error occurred while updating data' }, { status: 500 });
   }
 }

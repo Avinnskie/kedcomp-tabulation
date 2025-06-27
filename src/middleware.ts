@@ -17,7 +17,7 @@ export async function middleware(req: NextRequest) {
   }
 
   // Block guest and admin from /round
-  if (pathname.startsWith('/round') && token?.role !== 'JUDGES') {
+  if (pathname.startsWith('/round') && token?.role !== 'JUDGE') {
     return NextResponse.redirect(new URL('/', req.url));
   }
 

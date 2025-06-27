@@ -1,18 +1,14 @@
 'use client';
 
 import * as Tabs from '@radix-ui/react-tabs';
+import Link from 'next/link';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { Repeat } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { Repeat } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DialogTrigger } from '@/components/ui/dialog';
-import { RoomDetailDialog } from '@/src/components/molecules/roomDetailDialog';
 
 export default function BracketPage() {
   const [rounds, setRounds] = useState<any[]>([]);
-  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
-  const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   useEffect(() => {
     fetch('/api/getBracket')
@@ -47,22 +43,11 @@ export default function BracketPage() {
             <Tabs.Content key={round.id} value={round.id} className="space-y-4">
               <div className="grid md:grid-cols-2 gap-2">
                 {round.assignments?.map((a: any, i: number) => {
-                  const posDebate: Record<string, string> = {
-                    OG: 'Opening Government',
-                    OO: 'Opening Opposition',
-                    CG: 'Closing Government',
-                    CO: 'Closing Opposition',
-                  };
-
                   return (
-                    <div
+                    <Link
+                      href={`/bracket/${a.room.id}?roundId=${round.id}`}
                       key={i}
-                      onClick={() => {
-                        setSelectedRoomId(a.room.id);
-                        setSelectedRoundId(round.id);
-                        setDialogOpen(true);
-                      }}
-                      className="cursor-pointer border p-4 rounded-xl shadow-md bg-white hover:shadow-lg transition-all"
+                      className="block border p-4 rounded-xl shadow-md bg-white hover:shadow-lg transition-all"
                     >
                       <div className="flex flex-col items-center mb-2">
                         <span className="text-sm text-gray-400">Room</span>
@@ -84,7 +69,7 @@ export default function BracketPage() {
                           );
                         })}
                       </div>
-                    </div>
+                    </Link>
                   );
                 })}
               </div>
@@ -93,21 +78,6 @@ export default function BracketPage() {
         </Tabs.Root>
       )}
 
-      {/* Modular Dialog */}
-      <RoomDetailDialog
-        open={dialogOpen}
-        onOpenChange={open => {
-          setDialogOpen(open);
-          if (!open) {
-            setSelectedRoomId(null);
-            setSelectedRoundId(null);
-          }
-        }}
-        roomId={selectedRoomId}
-        roundId={selectedRoundId}
-      />
-
-      {/* Floating Button */}
       <TooltipProvider>
         <Tooltip>
           <TooltipTrigger asChild>

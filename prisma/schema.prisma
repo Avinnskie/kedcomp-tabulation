@@ -5,6 +5,13 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model LogActivity {
+    id Int @id @default(autoincrement())
+    message String
+    createdAt DateTime @default(now())
 }
 
 model User {
@@ -55,6 +62,8 @@ model Round {
   id          Int               @id @default(autoincrement())
   name        String // e.g. "Preliminary 1", "Semifinal"
   number      Int // 1, 2, 3, 4 (semi), 5 (final)
+  motion      String?
+  description String?
   assignments RoundAssignment[]
   Score       Score[]
 }

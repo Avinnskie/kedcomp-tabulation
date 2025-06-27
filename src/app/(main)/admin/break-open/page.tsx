@@ -98,56 +98,28 @@ export default function AssignJudgePage() {
             <div className="flex flex-col md:flex-row gap-4">
               <div>
                 <Label className="block mb-1">
-                  {a.roundNumber === 5 ? 'Pilih 3 Juri:' : 'Pilih Juri:'}
+                  Pilih Juri:
                 </Label>
-                {a.roundNumber === 5 ? (
-                  [0, 1, 2].map(i => (
-                    <Select
-                      key={i}
-                      value={selected[a.id]?.judgeIds?.[i]?.toString() || ''}
-                      onValueChange={val => {
-                        const newJudgeIds = [...(selected[a.id]?.judgeIds || [])];
-                        newJudgeIds[i] = Number(val);
-                        setSelected(prev => ({
-                          ...prev,
-                          [a.id]: { ...prev[a.id], judgeIds: newJudgeIds },
-                        }));
-                      }}
-                    >
-                      <SelectTrigger className="w-64 mt-1">
-                        <SelectValue placeholder={`Juri ${i + 1}`} />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {judges.map(j => (
-                          <SelectItem key={j.id} value={j.id.toString()}>
-                            {j.name} ({j.email})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  ))
-                ) : (
-                  <Select
-                    value={selected[a.id]?.judgeIds?.[0]?.toString() || ''}
-                    onValueChange={val => {
-                      setSelected(prev => ({
-                        ...prev,
-                        [a.id]: { ...prev[a.id], judgeIds: [Number(val)] },
-                      }));
-                    }}
-                  >
-                    <SelectTrigger className="w-64">
-                      <SelectValue placeholder="Pilih juri" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {judges.map(j => (
-                        <SelectItem key={j.id} value={j.id.toString()}>
-                          {j.name} ({j.email})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                <Select
+                  value={selected[a.id]?.judgeIds?.[0]?.toString() || ''}
+                  onValueChange={val => {
+                    setSelected(prev => ({
+                      ...prev,
+                      [a.id]: { ...prev[a.id], judgeIds: [Number(val)] },
+                    }));
+                  }}
+                >
+                  <SelectTrigger className="w-64">
+                    <SelectValue placeholder="Pilih juri" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {judges.map(j => (
+                      <SelectItem key={j.id} value={j.id.toString()}>
+                        {j.name} ({j.email})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
               <div>
                 <Label className="block mb-1">Pilih Ruangan:</Label>

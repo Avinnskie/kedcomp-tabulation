@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 
@@ -12,11 +12,36 @@ export default function AdminPage() {
   const [judge, setJudge] = useState({ name: '', email: '', password: '' });
   const [roomName, setRoomName] = useState('');
 
-  const [loading, setLoading] = useState(false);
+  const [loadingTeam, setLoadingTeam] = useState(false);
+  const [loadingJudge, setLoadingJudge] = useState(false);
+  const [loadingRoom, setLoadingRoom] = useState(false);
+
+  const [rounds, setRounds] = useState<any[]>([]);
+  const [motionState, setMotionState] = useState<Record<number, string>>({});
+  const [descriptionState, setDescriptionState] = useState<Record<number, string>>({});
+
+  useEffect(() => {
+    fetch('/api/getBracket')
+      .then(res => res.json())
+      .then(data => {
+        setRounds(data.rounds);
+
+        const motions: Record<number, string> = {};
+        const descriptions: Record<number, string> = {};
+
+        data.rounds.forEach((r: any) => {
+          motions[r.id] = r.motion || '';
+          descriptions[r.id] = r.description || '';
+        });
+
+        setMotionState(motions);
+        setDescriptionState(descriptions);
+      });
+  }, []);
 
   const handleCreateTeam = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoadingTeam(true);
 
     const res = await fetch('/api/teams/create', {
       method: 'POST',
@@ -38,12 +63,12 @@ export default function AdminPage() {
       toast.error(result.message || 'Failed to create team.');
     }
 
-    setLoading(false);
+    setLoadingTeam(false);
   };
 
   const handleCreateJudge = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoadingJudge(true);
 
     const res = await fetch('/api/judge/create', {
       method: 'POST',
@@ -60,12 +85,12 @@ export default function AdminPage() {
       toast.error(result.message || 'Failed to create judge.');
     }
 
-    setLoading(false);
+    setLoadingJudge(false);
   };
 
   const handleCreateRoom = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
+    setLoadingRoom(true);
 
     const res = await fetch('/api/rooms/create', {
       method: 'POST',
@@ -82,7 +107,26 @@ export default function AdminPage() {
       toast.error(result.message || 'Failed to create room.');
     }
 
-    setLoading(false);
+    setLoadingRoom(false);
+  };
+
+  const handleSaveMotion = async (roundId: number) => {
+    const motion = motionState[roundId] || '';
+    const description = descriptionState[roundId] || '';
+
+    const res = await fetch(`/api/admin/round/${roundId}/motion`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ motion, description }),
+    });
+
+    const result = await res.json();
+
+    if (res.ok) {
+      toast.success('Motion updated!');
+    } else {
+      toast.error(result.message || 'Failed to update motion.');
+    }
   };
 
   return (
@@ -92,8 +136,10 @@ export default function AdminPage() {
           <TabsTrigger value="team">Create Team</TabsTrigger>
           <TabsTrigger value="judge">Add Judge</TabsTrigger>
           <TabsTrigger value="room">Add Room</TabsTrigger>
+          <TabsTrigger value="motion">Edit Motion</TabsTrigger>
         </TabsList>
 
+        {/* Create Team Tab */}
         <TabsContent value="team">
           <h1 className="text-xl font-semibold mb-4">Create a New Team</h1>
           <form onSubmit={handleCreateTeam} className="space-y-4">
@@ -140,14 +186,15 @@ export default function AdminPage() {
 
             <button
               type="submit"
-              disabled={loading}
+              disabled={loadingTeam}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              {loading ? 'Saving...' : 'Create Team'}
+              {loadingTeam ? 'Saving...' : 'Create Team'}
             </button>
           </form>
         </TabsContent>
 
+        {/* Add Judge Tab */}
         <TabsContent value="judge">
           <h1 className="text-xl font-semibold mb-4">Add a Judge</h1>
           <form onSubmit={handleCreateJudge} className="space-y-4">
@@ -177,14 +224,15 @@ export default function AdminPage() {
             />
             <button
               type="submit"
-              disabled={loading}
+              disabled={loadingJudge}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              {loading ? 'Saving...' : 'Create Judge'}
+              {loadingJudge ? 'Saving...' : 'Add Judge'}
             </button>
           </form>
         </TabsContent>
 
+        {/* Add Room Tab */}
         <TabsContent value="room">
           <h1 className="text-xl font-semibold mb-4">Add a Room</h1>
           <form onSubmit={handleCreateRoom} className="space-y-4">
@@ -198,12 +246,56 @@ export default function AdminPage() {
             />
             <button
               type="submit"
-              disabled={loading}
+              disabled={loadingRoom}
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
             >
-              {loading ? 'Saving...' : 'Create Room'}
+              {loadingRoom ? 'Saving...' : 'Add Room'}
             </button>
           </form>
+        </TabsContent>
+
+        {/* Edit Motion Tab */}
+        <TabsContent value="motion">
+          <h1 className="text-xl font-semibold mb-4">Edit Motion</h1>
+          {rounds.length === 0 ? (
+            <p className="text-gray-500">No rounds available. Please generate brackets first.</p>
+          ) : (
+            <div className="space-y-6">
+              {rounds.map(round => (
+                <div key={round.id} className="border p-4 rounded space-y-3">
+                  <h2 className="font-semibold">{round.name}</h2>
+
+                  <div>
+                    <label className="block text-sm font-medium">Motion Title</label>
+                    <textarea
+                      value={motionState[round.id] || ''}
+                      onChange={e =>
+                        setMotionState(prev => ({ ...prev, [round.id]: e.target.value }))
+                      }
+                      onBlur={() => handleSaveMotion(round.id)}
+                      placeholder="Enter motion title..."
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium">Motion Explanation</label>
+                    <textarea
+                      value={descriptionState[round.id] || ''}
+                      onChange={e =>
+                        setDescriptionState(prev => ({ ...prev, [round.id]: e.target.value }))
+                      }
+                      onBlur={() => handleSaveMotion(round.id)}
+                      placeholder="Enter motion explanation..."
+                      className="w-full border p-2 rounded"
+                    />
+                  </div>
+
+                  <div className="text-sm text-gray-500">Auto-save on blur</div>
+                </div>
+              ))}
+            </div>
+          )}
         </TabsContent>
       </Tabs>
     </div>

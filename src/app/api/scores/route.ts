@@ -40,6 +40,7 @@ export async function POST(req: Request) {
         judges: true,
         judge: true,
         round: true,
+        room: true,
       },
     });
 
@@ -54,18 +55,35 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'You are not assigned to this round' }, { status: 403 });
     }
 
-    const existing = await prisma.score.findFirst({
-      where: {
-        judgeId: judge.id,
-        roundId: assignment.roundId,
-      },
-    });
+    const isGrandFinal = assignment.round.number === 5;
 
-    if (existing) {
-      return NextResponse.json(
-        { message: 'Scores already submitted for this round by this judge' },
-        { status: 409 }
-      );
+    // Grand Final special rule:
+    if (isGrandFinal) {
+      const existingGFScore = await prisma.score.findFirst({
+        where: { roundId: assignment.roundId },
+      });
+
+      if (existingGFScore) {
+        return NextResponse.json(
+          { message: 'Grand Final scores already submitted by another judge.' },
+          { status: 409 }
+        );
+      }
+    } else {
+      // Normal round rule (per judge)
+      const existing = await prisma.score.findFirst({
+        where: {
+          judgeId: judge.id,
+          roundId: assignment.roundId,
+        },
+      });
+
+      if (existing) {
+        return NextResponse.json(
+          { message: 'Scores already submitted for this round by this judge' },
+          { status: 409 }
+        );
+      }
     }
 
     const scoreEntries = [
@@ -99,6 +117,12 @@ export async function POST(req: Request) {
         })
       )
     );
+
+    await prisma.logActivity.create({
+      data: {
+        message: `Judge ${user.name} submitted scores for ${assignment.round.name} in ${assignment.room?.name ?? 'Room ID ' + assignment.roomId}`,
+      },
+    });
 
     return NextResponse.json(
       { message: 'Scores submitted successfully', scores: createdScores },
