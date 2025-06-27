@@ -146,7 +146,7 @@ export function Dashboard() {
       <div className="space-y-5">
         <h1 className="text-3xl font-bold">Khatulistiwa English Debating Competition (KEDCOMP)</h1>
         <i>
-          <q className="text-lg">What's is KEDCOMP?</q>
+          <q className="text-lg">What&apos;s is KEDCOMP?</q>
         </i>
         <div className="p-3 border rounded bg-gray-100 mb-3 mt-5">
           KEDCOMP (Khatulistiwa English Debating Competition) adalah ajang kompetisi debat berbahasa
