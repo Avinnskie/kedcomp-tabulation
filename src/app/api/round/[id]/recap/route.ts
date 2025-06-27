@@ -39,7 +39,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         judges: {
           judgeName: string;
           isSubmitted: boolean;
-          scores: { teamName: string; score: number }[];
+          scores: {
+            teamName: string;
+            vp: number;
+            participants: { name: string; value: number }[];
+          }[];
         }[];
         teamScores: { teamName: string; totalScore: number }[];
       };

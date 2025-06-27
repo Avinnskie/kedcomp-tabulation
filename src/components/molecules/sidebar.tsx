@@ -185,7 +185,7 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center w-full gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded py-2 transition-all">
                   <img
-                    src={user?.image ?? '/logo-kdc.png'}
+                    src={'/logo-kdc.png'}
                     className="h-7 w-7 shrink-0 rounded-full object-cover"
                     alt="Avatar"
                   />
