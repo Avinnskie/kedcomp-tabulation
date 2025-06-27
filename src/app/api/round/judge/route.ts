@@ -31,10 +31,7 @@ export async function GET() {
   // Ambil semua round assignment untuk semifinal & grand final
   const assignments = await prisma.roundAssignment.findMany({
     where: {
-      OR: [
-        { judgeId }, // semifinal
-        { judges: { some: { id: judgeId } } }, // grand final
-      ],
+      judgeId, // both semifinal and grand final use single judge
     },
     include: {
       round: true,

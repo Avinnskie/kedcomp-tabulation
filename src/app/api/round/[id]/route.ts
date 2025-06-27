@@ -37,7 +37,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       round: true,
       room: true,
       judge: true,
-      judges: true, // for grand final
       teamAssignments: {
         include: {
           team: {
@@ -54,8 +53,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     return NextResponse.json({ error: 'Assignment not found' }, { status: 404 });
   }
 
-  const isAuthorized =
-    assignment.judgeId === judge.id || assignment.judges?.some(j => j.id === judge.id);
+  const isAuthorized = assignment.judgeId === judge.id;
 
   if (!isAuthorized) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

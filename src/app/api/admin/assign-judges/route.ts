@@ -87,17 +87,6 @@ export async function POST(req: NextRequest) {
             judgeId: judgeIds?.[0] ?? null,
           },
         });
-
-        if (judgeIds?.[0]) {
-          await prisma.roundAssignment.update({
-            where: { id: assignmentId },
-            data: {
-              judges: {
-                connect: [{ id: judgeIds[0] }],
-              },
-            },
-          });
-        }
       }
     }
 

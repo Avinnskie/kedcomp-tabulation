@@ -22,7 +22,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           include: { Score: true },
         },
         judge: true,
-        judges: true,
         teamAssignments: {
           include: {
             team: {

@@ -37,7 +37,6 @@ export async function POST(req: Request) {
     const assignment = await prisma.roundAssignment.findUnique({
       where: { id: Number(roundAssignmentId) },
       include: {
-        judges: true,
         judge: true,
         round: true,
         room: true,
@@ -48,8 +47,7 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Assignment not found' }, { status: 404 });
     }
 
-    const isAuthorized =
-      assignment.judgeId === judge.id || assignment.judges?.some(j => j.id === judge.id);
+    const isAuthorized = assignment.judgeId === judge.id;
 
     if (!isAuthorized) {
       return NextResponse.json({ message: 'You are not assigned to this round' }, { status: 403 });
