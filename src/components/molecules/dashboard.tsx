@@ -142,8 +142,21 @@ export function Dashboard() {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-5">
-      {items.slice(0, 3).map((item, i) => (
+    <div className="py-5">
+      <div className="space-y-5">
+        <h1 className="text-3xl font-bold">Khatulistiwa English Debating Competition (KEDCOMP)</h1>
+        <i>
+          <q className="text-lg">What's is KEDCOMP?</q>
+        </i>
+        <div className="p-3 border rounded bg-gray-100 mb-3 mt-5">
+          KEDCOMP (Khatulistiwa English Debating Competition) adalah ajang kompetisi debat berbahasa
+          Inggris tingkat SMA/SMK/MA/sederajat se-Kalimantan Barat. Diselenggarakan oleh UKM POWERS
+          Politeknik Negeri Pontianak, kompetisi ini dirancang untuk mendorong siswa mengasah
+          kemampuan berpikir kritis dan komunikasi dalam bahasa Inggris.
+        </div>
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* {items.slice(0, 3).map((item, i) => (
         <BentoGridItem
           key={i}
           title={item.title}
@@ -151,35 +164,36 @@ export function Dashboard() {
           icon={item.icon}
           content={item.content}
         />
-      ))}
+      ))} */}
 
-      <div className="md:col-span-2">
-        <BentoGridItem
-          title={items[3].title}
-          description={items[3].description}
-          icon={items[3].icon}
-          content={items[3].content}
-        />
-      </div>
+        <div className="md:col-span-2">
+          <BentoGridItem
+            title={items[3].title}
+            description={items[3].description}
+            icon={items[3].icon}
+            content={items[3].content}
+          />
+        </div>
 
-      <div className="">
-        {/* <BentoGridItem
+        <div className="">
+          {/* <BentoGridItem
           title={items[4].title}
           description={items[4].description}
           icon={items[4].icon}
           content={items[4].content}
           className=""
         /> */}
-        <div className="group/bento relative flex flex-col space-y-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-md transition duration-200 hover:shadow-xl dark:border-white/[0.1] dark:bg-neutral-900 h-[330px] overflow-y-auto">
-          <div className="w-full flex flex-col items-center transition duration-200 group-hover/bento:translate-x-1">
-            {items[4].icon}
-            <div className="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-200">
-              {items[4].title}
+          <div className="group/bento relative flex flex-col space-y-4 rounded-xl border border-neutral-200 bg-white p-4 shadow-md transition duration-200 hover:shadow-xl dark:border-white/[0.1] dark:bg-neutral-900 h-[330px] overflow-y-auto">
+            <div className="w-full flex flex-col items-center transition duration-200 group-hover/bento:translate-x-1">
+              {items[4].icon}
+              <div className="mt-2 text-xl font-semibold text-neutral-700 dark:text-neutral-200">
+                {items[4].title}
+              </div>
+              <div className="text-sm text-neutral-500 dark:text-neutral-300">
+                {items[4].description}
+              </div>
+              {items[4].content && <div className="w-full mt-4">{items[4].content}</div>}
             </div>
-            <div className="text-sm text-neutral-500 dark:text-neutral-300">
-              {items[4].description}
-            </div>
-            {items[4].content && <div className="w-full mt-4">{items[4].content}</div>}
           </div>
         </div>
       </div>
