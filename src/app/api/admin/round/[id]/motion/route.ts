@@ -1,9 +1,10 @@
 import { prisma } from '@/src/lib/prisma';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const id = parseInt(params.id);
+    const resolvedParams = await params;
+    const id = parseInt(resolvedParams.id);
     const { motion, description } = await req.json();
 
     if (isNaN(id) || !motion) {
