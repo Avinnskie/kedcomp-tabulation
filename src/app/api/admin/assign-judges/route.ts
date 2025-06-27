@@ -16,7 +16,6 @@ export async function GET() {
         round: true,
         room: true,
         judge: true,
-        judges: true,
       },
     });
 
@@ -31,7 +30,7 @@ export async function GET() {
       roundName: a.round.name,
       roundNumber: a.round.number,
       roomId: a.roomId,
-      judgeIds: a.round.number === 5 ? a.judges.map(j => j.id) : a.judge ? [a.judge.id] : [],
+      judgeIds: a.judge ? [a.judge.id] : [],
     }));
 
     return NextResponse.json({
@@ -85,7 +84,7 @@ export async function POST(req: NextRequest) {
         await prisma.roundAssignment.update({
           where: { id: assignmentId },
           data: {
-            judges: { set: [] }, // clear
+            judgeId: judgeIds?.[0] ?? null,
           },
         });
 
