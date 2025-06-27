@@ -2,19 +2,19 @@
 import {
   Table,
   TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
+  TableCell,
 } from '@/components/ui/table';
-// import { Participant } from '@prisma/client';
 import { useEffect, useState } from 'react';
 
 interface Participant {
   id: string;
   name: string;
+  team: {
+    name: string;
+  };
 }
 
 export default function ParticipantPage() {
@@ -29,10 +29,11 @@ export default function ParticipantPage() {
 
     fetchParticipants();
   }, []);
+
   return (
     <div className="w-full p-6">
       <h5 className="text-xl font-medium">List Participant KEDCOMP 2025</h5>
-      <Table className={'mt-2'}>
+      <Table className="mt-2">
         <TableHeader>
           <TableRow>
             <TableHead>No</TableHead>

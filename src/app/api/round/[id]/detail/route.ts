@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const roundId = parseInt(params.id);
+    const resolvedParams = await params;
+    const roundId = parseInt(resolvedParams.id);
     if (isNaN(roundId)) {
       return NextResponse.json({ message: 'Invalid round ID' }, { status: 400 });
     }

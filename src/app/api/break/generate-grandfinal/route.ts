@@ -1,4 +1,5 @@
 import { prisma } from '@/src/lib/prisma';
+import { DebatePosition } from '@prisma/client';
 import { NextResponse } from 'next/server';
 
 export async function POST() {
@@ -107,7 +108,7 @@ export async function POST() {
           data: {
             roundAssignmentId: assignment.id,
             teamId: team.teamId,
-            position: ['OG', 'OO', 'CG', 'CO'][i],
+            position: ['OG', 'OO', 'CG', 'CO'][i] as DebatePosition,
           },
         })
       )

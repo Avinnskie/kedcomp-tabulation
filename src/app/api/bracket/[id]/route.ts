@@ -1,11 +1,10 @@
-// src/app/api/bracket/[id]/route.ts
-
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const roundId = parseInt(params.id);
+    const resolvedParams = await params;
+    const roundId = parseInt(resolvedParams.id);
     if (isNaN(roundId)) {
       return NextResponse.json({ message: 'Invalid round ID' }, { status: 400 });
     }
@@ -13,7 +12,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
     const round = await prisma.round.findUnique({
       where: { id: roundId },
       include: {
-        Score: true, // include scores if you want to show team/individual scores
+        Score: true,
         assignments: {
           include: {
             room: true,

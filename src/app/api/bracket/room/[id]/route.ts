@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/src/lib/prisma';
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const roomId = Number(params.id);
+    const resolvedParams = await params;
+    const roomId = Number(resolvedParams.id);
     const url = new URL(req.url);
     const roundId = Number(url.searchParams.get('roundId'));
 
