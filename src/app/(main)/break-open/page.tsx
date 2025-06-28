@@ -6,6 +6,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Loader2, LoaderCircle, Repeat } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useSession } from 'next-auth/react';
 
 interface Team {
   teamId: number;
@@ -19,6 +20,8 @@ export default function BreakSemifinalPage() {
   const [generated, setGenerated] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'ADMIN';
 
   const fetchTopTeams = async () => {
     const res = await fetch('/api/tabulation');
@@ -85,24 +88,26 @@ export default function BreakSemifinalPage() {
         ))}
       </div>
 
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            {!generated && (
-              <button
-                onClick={handleGenerate}
-                disabled={loading}
-                className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50"
-              >
-                {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Repeat />}
-              </button>
-            )}
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>Generate Bracket Grand Final</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {isAdmin && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              {!generated && (
+                <button
+                  onClick={handleGenerate}
+                  disabled={loading}
+                  className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Repeat />}
+                </button>
+              )}
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Generate Bracket Grand Final</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
     </div>
   );
 }
