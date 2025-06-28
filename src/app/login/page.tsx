@@ -30,7 +30,7 @@ export default function LoginPage() {
 
   return (
     <div className="flex w-full h-screen justify-center">
-      <div className="w-3/5">
+      <div className="w-3/5 hidden md:block">
         <Image
           className="w-full h-full object-cover"
           src={'/assetLogin.png'}
@@ -39,7 +39,7 @@ export default function LoginPage() {
           alt="asset"
         ></Image>
       </div>
-      <div className="w-2/5 flex flex-col justify-center px-10">
+      <div className="w-full md:w-2/5 flex flex-col justify-center px-10">
         <div className="mb-4">
           <h1 className="text-2xl font-bold text-start">Login to KEDCOMP</h1>
           <h5>Log in to your account!</h5>
