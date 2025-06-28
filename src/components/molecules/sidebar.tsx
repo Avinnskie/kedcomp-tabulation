@@ -6,16 +6,11 @@ import { cn } from '@/lib/utils';
 import Image from 'next/image';
 import { useEffect, useState } from 'react';
 import { useSession } from 'next-auth/react';
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-} from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { signOut } from 'next-auth/react';
 import { SidebarButton } from '../atoms/sidebarButton';
-import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { usePathname } from 'next/navigation';
 
 interface SidebarComponentProps {
   children: React.ReactNode;
@@ -29,12 +24,14 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
   const isAdmin = session?.user?.role === 'ADMIN';
   const isJudge = session?.user?.role === 'JUDGE';
 
+  const pathname = usePathname();
+
   useEffect(() => {
-    console.log('Logged in user role:', session?.user?.role);
-  }, [session]);
+    setOpen(false); // tutup sidebar saat halaman berubah
+  }, [pathname]);
 
   const handleLogout = async () => {
-    const res = await signOut({ redirect: false });
+    await signOut({ redirect: false });
     toast.success('Logout berhasil!');
   };
 
@@ -64,11 +61,6 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
       href: '/tabulation',
       icon: <Scale className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
     },
-    // {
-    //   label: 'Judge Round',
-    //   href: '/round',
-    //   icon: <NotebookPen className="h-5 w-5 shrink-0 text-neutral-700 dark:text-neutral-200" />,
-    // },
   ];
 
   return (
@@ -184,10 +176,12 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="flex items-center w-full gap-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded py-2 transition-all">
-                  <img
+                  <Image
                     src={'/logo-kdc.png'}
                     className="h-7 w-7 shrink-0 rounded-full object-cover"
                     alt="Avatar"
+                    width={28}
+                    height={28}
                   />
                   <span
                     className={cn(
@@ -204,7 +198,6 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
         </SidebarBody>
       </Sidebar>
 
-      {/* Wrapper konten kanan dengan margin dinamis */}
       <div
         className={cn(
           'w-full px-2 transition-all duration-300',

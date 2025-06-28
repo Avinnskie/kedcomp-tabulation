@@ -133,7 +133,7 @@ export default function AdminPage() {
     <div className="w-full p-6">
       <Tabs defaultValue="team" className="w-full">
         <TabsList className="mb-6">
-          <TabsTrigger value="team">Create Team</TabsTrigger>
+          <TabsTrigger value="team">Add Team</TabsTrigger>
           <TabsTrigger value="judge">Add Judge</TabsTrigger>
           <TabsTrigger value="room">Add Room</TabsTrigger>
           <TabsTrigger value="motion">Edit Motion</TabsTrigger>

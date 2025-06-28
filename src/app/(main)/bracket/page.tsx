@@ -5,7 +5,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Repeat } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { DialogTrigger } from '@/components/ui/dialog';
 import { RoomDetailDialog } from '@/src/components/molecules/roomDetailDialog';
 
 export default function BracketPage() {
@@ -31,7 +30,7 @@ export default function BracketPage() {
         <p className="text-muted-foreground">There is no bracket available yet.</p>
       ) : (
         <Tabs.Root defaultValue={rounds[0]?.id} className="w-full">
-          <Tabs.List className="flex gap-2 mb-4 border-b">
+          <Tabs.List className="flex flex-wrap gap-2 mb-4 border-b">
             {rounds.map((round: any) => (
               <Tabs.Trigger
                 key={round.id}
@@ -69,20 +68,12 @@ export default function BracketPage() {
                         <span className="text-xl font-semibold">{a.room.name}</span>
                       </div>
                       <div className="grid md:grid-cols-2 space-y-1">
-                        {a.teamAssignments.map((ta: any, idx: number) => {
-                          const posDebate: Record<string, string> = {
-                            OG: 'Opening Government',
-                            OO: 'Opening Opposition',
-                            CG: 'Closing Government',
-                            CO: 'Closing Opposition',
-                          };
-                          return (
-                            <div key={idx} className="text-center flex flex-col font-medium">
-                              <h5 className="text-sm text-gray-400">{posDebate[ta.position]}</h5>
-                              <h2 className="text-lg font-medium">{ta.team.name}</h2>
-                            </div>
-                          );
-                        })}
+                        {a.teamAssignments.map((ta: any, idx: number) => (
+                          <div key={idx} className="text-center flex flex-col font-medium">
+                            <h5 className="text-sm text-gray-400">{posDebate[ta.position]}</h5>
+                            <h2 className="text-lg font-medium">{ta.team.name}</h2>
+                          </div>
+                        ))}
                       </div>
                     </div>
                   );

@@ -5,6 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ChevronsUp, ChevronsDown, Repeat, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
+import { ResponsiveTabs } from '@/src/components/molecules/responsiveTabs';
 
 interface RoundData {
   roundId: number;
@@ -46,6 +47,7 @@ export default function TabulationPage() {
   const [generatingFinal, setGeneratingFinal] = useState(false);
   const [finalGenerated, setFinalGenerated] = useState(false);
   const [grandFinalData, setGrandFinalData] = useState<TeamTabulation[]>([]);
+  const [activeTab, setActiveTab] = useState('preliminary');
 
   const handleGenerateGrandFinal = async () => {
     setGeneratingFinal(true);
@@ -97,12 +99,21 @@ export default function TabulationPage() {
       </h1>
 
       <Tabs defaultValue="prelim">
-        <TabsList className="mb-4">
-          <TabsTrigger value="prelim">Preliminary</TabsTrigger>
-          <TabsTrigger value="break">Semi Final</TabsTrigger>
-          <TabsTrigger value="grandfinal">Grand Final</TabsTrigger>
-          <TabsTrigger value="individual">Speaker</TabsTrigger>
-        </TabsList>
+        <ResponsiveTabs
+          current={activeTab}
+          onChange={setActiveTab}
+          tabs={[
+            { label: 'Preliminary', value: 'preliminary' },
+            { label: 'Semi Final', value: 'semifinal' },
+            { label: 'Grand Final', value: 'grandfinal' },
+            { label: 'Speaker', value: 'speaker' },
+          ]}
+        />
+
+        {activeTab === 'preliminary' && <div>Isi Preliminary</div>}
+        {activeTab === 'semifinal' && <div>Isi Semifinal</div>}
+        {activeTab === 'grandfinal' && <div>Isi Grand Final</div>}
+        {activeTab === 'speaker' && <div>Isi Speaker</div>}
 
         <TabsContent value="prelim">
           <TeamTabulationTable data={prelimData} prefix="Preliminary" />
