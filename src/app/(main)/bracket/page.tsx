@@ -6,12 +6,15 @@ import { toast } from 'sonner';
 import { Repeat } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { RoomDetailDialog } from '@/src/components/molecules/roomDetailDialog';
+import { useSession } from 'next-auth/react';
 
 export default function BracketPage() {
   const [rounds, setRounds] = useState<any[]>([]);
   const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
   const [selectedRoundId, setSelectedRoundId] = useState<number | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'ADMIN';
 
   useEffect(() => {
     fetch('/api/getBracket')
@@ -99,30 +102,32 @@ export default function BracketPage() {
       />
 
       {/* Floating Button */}
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <button
-              onClick={async () => {
-                const res = await fetch('/api/round/generate-prelims', { method: 'POST' });
-                const data = await res.json();
-                if (res.ok) {
-                  setRounds(prev => [...prev, ...(data.rounds ?? [])]);
-                  toast.success(data.message);
-                } else {
-                  toast.error(data.error);
-                }
-              }}
-              className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50"
-            >
-              <Repeat className="w-5 h-5" />
-            </button>
-          </TooltipTrigger>
-          <TooltipContent side="left">
-            <p>Generate Bracket</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+      {isAdmin && (
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <button
+                onClick={async () => {
+                  const res = await fetch('/api/round/generate-prelims', { method: 'POST' });
+                  const data = await res.json();
+                  if (res.ok) {
+                    setRounds(prev => [...prev, ...(data.rounds ?? [])]);
+                    toast.success(data.message);
+                  } else {
+                    toast.error(data.error);
+                  }
+                }}
+                className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                <Repeat className="w-5 h-5" />
+              </button>
+            </TooltipTrigger>
+            <TooltipContent side="left">
+              <p>Generate Bracket</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+      )}
     </div>
   );
 }

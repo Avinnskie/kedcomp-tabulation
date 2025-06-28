@@ -20,9 +20,10 @@ export async function GET(req: Request) {
       orderBy: { number: 'asc' },
     });
 
-    return NextResponse.json({ rounds });
+    // Pastikan selalu mengembalikan array kosong jika null/undefined
+    return NextResponse.json({ rounds: rounds ?? [] });
   } catch (err: any) {
     console.error('[ERROR]', err);
-    return NextResponse.json({ error: err.message }, { status: 500 });
+    return NextResponse.json({ rounds: [], error: err.message }, { status: 500 });
   }
 }
