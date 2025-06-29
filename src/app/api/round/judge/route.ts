@@ -1,82 +1,93 @@
 import { getServerSession } from 'next-auth';
 import { NextResponse } from 'next/server';
-import { prisma } from '@/src/lib/prisma';
+import { prisma, withRetry } from '@/src/lib/prisma';
 import { authOptions } from '@/src/lib/authOptions';
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  try {
+    const session = await getServerSession(authOptions);
 
-  if (!session?.user?.email) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
+    if (!session?.user?.email) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
-  const user = await prisma.user.findUnique({
-    where: { email: session.user.email },
-  });
+    const user = await withRetry(() =>
+      prisma.user.findUnique({
+        where: { email: session.user.email },
+      })
+    );
 
-  if (!user) {
-    return NextResponse.json({ error: 'User not found' }, { status: 404 });
-  }
+    if (!user) {
+      return NextResponse.json({ error: 'User not found' }, { status: 404 });
+    }
 
-  const judge = await prisma.judge.findUnique({
-    where: { userId: user.id },
-  });
+    const judge = await withRetry(() =>
+      prisma.judge.findUnique({
+        where: { userId: user.id },
+      })
+    );
 
-  if (!judge) {
-    return NextResponse.json({ error: 'Judge not found' }, { status: 404 });
-  }
+    if (!judge) {
+      return NextResponse.json({ error: 'Judge not found' }, { status: 404 });
+    }
 
-  const judgeId = judge.id;
-
-  // Ambil semua round assignment untuk semifinal & grand final
-  const assignments = await prisma.roundAssignment.findMany({
-    where: {
-      judgeId, // both semifinal and grand final use single judge
-    },
-    include: {
-      round: true,
-      room: true,
-      teamAssignments: {
+    const assignments = await withRetry(() =>
+      prisma.roundAssignment.findMany({
+        where: { judgeId: judge.id },
         include: {
-          team: true,
-        },
-      },
-    },
-    orderBy: {
-      round: { number: 'asc' },
-    },
-  });
-
-  // Cek status nilai (isScored)
-  const rounds = await Promise.all(
-    assignments.map(async assignment => {
-      const scoreCount = await prisma.score.count({
-        where: {
-          roundId: assignment.roundId,
-          judgeId: judgeId,
-        },
-      });
-
-      return {
-        id: assignment.id,
-        round: {
-          name: assignment.round.name,
-          number: assignment.round.number,
-        },
-        room: {
-          name: assignment.room.name,
-        },
-        teamAssignments: assignment.teamAssignments.map(ta => ({
-          team: {
-            id: ta.team.id,
-            name: ta.team.name,
+          round: true,
+          room: true,
+          teamAssignments: {
+            include: { team: true },
           },
-          position: ta.position,
-        })),
-        isScored: scoreCount > 0,
-      };
-    })
-  );
+        },
+        orderBy: {
+          round: { number: 'asc' },
+        },
+      })
+    );
 
-  return NextResponse.json({ rounds });
+    const rounds = await Promise.all(
+      assignments.map(async assignment => {
+        let scoreCount = 0;
+        try {
+          scoreCount = await withRetry(() => 
+            prisma.score.count({
+              where: {
+                roundId: assignment.roundId,
+                judgeId: judge.id,
+              },
+            })
+          );
+        } catch (err) {
+          console.error('Error querying score count:', err);
+          scoreCount = 0;
+        }
+
+        return {
+          id: assignment.id,
+          round: {
+            name: assignment.round.name,
+            number: assignment.round.number,
+          },
+          room: {
+            name: assignment.room.name,
+          },
+          teamAssignments: assignment.teamAssignments.map(ta => ({
+            team: {
+              id: ta.team.id,
+              name: ta.team.name,
+            },
+            position: ta.position,
+          })),
+          isScored: scoreCount > 0,
+        };
+      })
+    );
+
+    return NextResponse.json({ rounds });
+  } catch (error) {
+    console.error('[GET /api/round/judge]', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }

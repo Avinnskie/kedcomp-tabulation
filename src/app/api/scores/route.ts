@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/src/lib/authOptions';
-import { prisma } from '@/src/lib/prisma';
+import { prisma, withRetry } from '@/src/lib/prisma';
 import { ScoreType } from '@prisma/client';
 
 export async function POST(req: Request) {
@@ -11,9 +11,11 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const user = await prisma.user.findUnique({
-      where: { email: session.user.email },
-    });
+    const user = await withRetry(() =>
+      prisma.user.findUnique({
+        where: { email: session.user.email },
+      })
+    );
 
     if (!user) {
       return NextResponse.json({ message: 'User not found' }, { status: 404 });
@@ -26,22 +28,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'Missing or invalid data' }, { status: 400 });
     }
 
-    const judge = await prisma.judge.findUnique({
-      where: { userId: user.id },
-    });
+    const judge = await withRetry(() =>
+      prisma.judge.findUnique({
+        where: { userId: user.id },
+      })
+    );
 
     if (!judge) {
       return NextResponse.json({ message: 'You are not a judge' }, { status: 403 });
     }
 
-    const assignment = await prisma.roundAssignment.findUnique({
-      where: { id: Number(roundAssignmentId) },
-      include: {
-        judge: true,
-        round: true,
-        room: true,
-      },
-    });
+    const assignment = await withRetry(() =>
+      prisma.roundAssignment.findUnique({
+        where: { id: Number(roundAssignmentId) },
+        include: {
+          judge: true,
+          round: true,
+          room: true,
+        },
+      })
+    );
 
     if (!assignment) {
       return NextResponse.json({ message: 'Assignment not found' }, { status: 404 });
@@ -57,9 +63,11 @@ export async function POST(req: Request) {
 
     // Grand Final special rule:
     if (isGrandFinal) {
-      const existingGFScore = await prisma.score.findFirst({
-        where: { roundId: assignment.roundId },
-      });
+      const existingGFScore = await withRetry(() =>
+        prisma.score.findFirst({
+          where: { roundId: assignment.roundId },
+        })
+      );
 
       if (existingGFScore) {
         return NextResponse.json(
@@ -69,12 +77,14 @@ export async function POST(req: Request) {
       }
     } else {
       // Normal round rule (per judge)
-      const existing = await prisma.score.findFirst({
-        where: {
-          judgeId: judge.id,
-          roundId: assignment.roundId,
-        },
-      });
+      const existing = await withRetry(() =>
+        prisma.score.findFirst({
+          where: {
+            judgeId: judge.id,
+            roundId: assignment.roundId,
+          },
+        })
+      );
 
       if (existing) {
         return NextResponse.json(
@@ -103,24 +113,28 @@ export async function POST(req: Request) {
 
     const createdScores = await Promise.all(
       scoreEntries.map(score =>
-        prisma.score.create({
-          data: {
-            judgeId: judge.id,
-            roundId: assignment.roundId,
-            teamId: score.teamId,
-            participantId: score.participantId,
-            scoreType: score.scoreType,
-            value: score.value,
-          },
-        })
+        withRetry(() =>
+          prisma.score.create({
+            data: {
+              judgeId: judge.id,
+              roundId: assignment.roundId,
+              teamId: score.teamId,
+              participantId: score.participantId,
+              scoreType: score.scoreType,
+              value: score.value,
+            },
+          })
+        )
       )
     );
 
-    await prisma.logActivity.create({
-      data: {
-        message: `Judge ${user.name} submitted scores for ${assignment.round.name} in ${assignment.room?.name ?? 'Room ID ' + assignment.roomId}`,
-      },
-    });
+    await withRetry(() =>
+      prisma.logActivity.create({
+        data: {
+          message: `Judge ${user.name} submitted scores for ${assignment.round.name} in ${assignment.room?.name ?? 'Room ID ' + assignment.roomId}`,
+        },
+      })
+    );
 
     return NextResponse.json(
       { message: 'Scores submitted successfully', scores: createdScores },

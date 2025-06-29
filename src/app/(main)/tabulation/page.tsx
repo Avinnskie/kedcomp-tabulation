@@ -5,7 +5,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ChevronsUp, ChevronsDown, Repeat, Loader2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
-import { ResponsiveTabs } from '@/src/components/molecules/responsiveTabs';
+import { useSession } from 'next-auth/react';
 
 interface RoundData {
   roundId: number;
@@ -47,7 +47,8 @@ export default function TabulationPage() {
   const [generatingFinal, setGeneratingFinal] = useState(false);
   const [finalGenerated, setFinalGenerated] = useState(false);
   const [grandFinalData, setGrandFinalData] = useState<TeamTabulation[]>([]);
-  const [activeTab, setActiveTab] = useState('preliminary');
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === 'ADMIN';
 
   const handleGenerateGrandFinal = async () => {
     setGeneratingFinal(true);
@@ -91,7 +92,7 @@ export default function TabulationPage() {
     .slice(0, 4);
 
   return (
-    <div className="p-6">
+    <div className="px-1 md:py-6">
       <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
         <ChevronsUp className="text-green-600" />
         Tabulation Score KEDCOMP
@@ -99,21 +100,12 @@ export default function TabulationPage() {
       </h1>
 
       <Tabs defaultValue="prelim">
-        <ResponsiveTabs
-          current={activeTab}
-          onChange={setActiveTab}
-          tabs={[
-            { label: 'Preliminary', value: 'preliminary' },
-            { label: 'Semi Final', value: 'semifinal' },
-            { label: 'Grand Final', value: 'grandfinal' },
-            { label: 'Speaker', value: 'speaker' },
-          ]}
-        />
-
-        {activeTab === 'preliminary' && <div>Isi Preliminary</div>}
-        {activeTab === 'semifinal' && <div>Isi Semifinal</div>}
-        {activeTab === 'grandfinal' && <div>Isi Grand Final</div>}
-        {activeTab === 'speaker' && <div>Isi Speaker</div>}
+        <TabsList className="mb-4">
+          <TabsTrigger value="prelim">Preliminary</TabsTrigger>
+          <TabsTrigger value="break">Semi Final</TabsTrigger>
+          <TabsTrigger value="grandfinal">Grand Final</TabsTrigger>
+          <TabsTrigger value="individual">Speaker</TabsTrigger>
+        </TabsList>
 
         <TabsContent value="prelim">
           <TeamTabulationTable data={prelimData} prefix="Preliminary" />
@@ -134,26 +126,28 @@ export default function TabulationPage() {
               </ol>
             </div>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleGenerateGrandFinal}
-                    disabled={generatingFinal}
-                    className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50"
-                  >
-                    {generatingFinal ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <Repeat className="w-5 h-5" />
-                    )}
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="left">
-                  <p>Generate Grand Final Bracket</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            {isAdmin && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleGenerateGrandFinal}
+                      disabled={generatingFinal}
+                      className="fixed bottom-6 right-6 z-50 bg-blue-600 text-white p-4 rounded-full shadow-lg hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      {generatingFinal ? (
+                        <Loader2 className="w-5 h-5 animate-spin" />
+                      ) : (
+                        <Repeat className="w-5 h-5" />
+                      )}
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="left">
+                    <p>Generate Grand Final Bracket</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
           </div>
         </TabsContent>
         <TabsContent value="grandfinal">

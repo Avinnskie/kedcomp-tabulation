@@ -17,6 +17,7 @@ type RoundData = {
 export default function RoundPage() {
   const { id } = useParams();
   const router = useRouter();
+  const [submitting, setSubmitting] = useState(false);
 
   const [data, setData] = useState<RoundData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -55,34 +56,41 @@ export default function RoundPage() {
   }, [id, router]);
 
   const handleSubmit = async () => {
-    const payload = {
-      roundAssignmentId: Number(id),
-      teamScores: Object.entries(teamScores).map(([teamId, value]) => ({
-        teamId: Number(teamId),
-        value,
-      })),
-      individualScores: Object.entries(individualScores).flatMap(([teamId, scores]) =>
-        Object.entries(scores).map(([participantId, value]) => ({
+    setSubmitting(true);
+    try {
+      const payload = {
+        roundAssignmentId: Number(id),
+        teamScores: Object.entries(teamScores).map(([teamId, value]) => ({
           teamId: Number(teamId),
-          participantId: Number(participantId),
           value,
-        }))
-      ),
-    };
+        })),
+        individualScores: Object.entries(individualScores).flatMap(([teamId, scores]) =>
+          Object.entries(scores).map(([participantId, value]) => ({
+            teamId: Number(teamId),
+            participantId: Number(participantId),
+            value,
+          }))
+        ),
+      };
 
-    const res = await fetch('/api/scores', {
-      method: 'POST',
-      body: JSON.stringify(payload),
-      headers: { 'Content-Type': 'application/json' },
-    });
+      const res = await fetch('/api/scores', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+        headers: { 'Content-Type': 'application/json' },
+      });
 
-    const json = await res.json();
+      const json = await res.json();
 
-    if (res.ok) {
-      toast.success('Scores submitted successfully.');
-      router.push('/round');
-    } else {
-      toast.error(json.message || 'Failed to submit scores.');
+      if (res.ok) {
+        toast.success('Scores submitted successfully.');
+        router.push('/round');
+      } else {
+        toast.error(json.message || 'Failed to submit scores.');
+      }
+    } catch (err) {
+      toast.error('Unexpected error occurred.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -135,9 +143,10 @@ export default function RoundPage() {
 
       <button
         onClick={handleSubmit}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+        disabled={submitting}
+        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
       >
-        Submit
+        {submitting ? 'Submitting...' : 'Submit'}
       </button>
     </div>
   );

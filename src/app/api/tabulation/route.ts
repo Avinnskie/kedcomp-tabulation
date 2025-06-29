@@ -1,27 +1,31 @@
-import { prisma } from '@/src/lib/prisma';
+import { prisma, withRetry } from '@/src/lib/prisma';
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  const rounds = await prisma.round.findMany({
-    include: {
-      assignments: {
-        include: {
-          teamAssignments: {
-            include: { team: true },
+  const rounds = await withRetry(() =>
+    prisma.round.findMany({
+      include: {
+        assignments: {
+          include: {
+            teamAssignments: {
+              include: { team: true },
+            },
           },
         },
       },
-    },
-    orderBy: { number: 'asc' },
-  });
+      orderBy: { number: 'asc' },
+    })
+  );
 
-  const allScores = await prisma.score.findMany({
-    include: {
-      team: true,
-      round: true,
-      participant: { include: { team: true } },
-    },
-  });
+  const allScores = await withRetry(() =>
+    prisma.score.findMany({
+      include: {
+        team: true,
+        round: true,
+        participant: { include: { team: true } },
+      },
+    })
+  );
 
   const individualScores = allScores.filter(s => s.scoreType === 'INDIVIDUAL');
 
