@@ -4,8 +4,8 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
   try {
-    // Ambil semifinal round
-    const semifinalRound = await prisma.round.findFirst({
+    // Ambil semua round semifinal (number === 4)
+    const semifinalRounds = await prisma.round.findMany({
       where: { number: 4 },
       include: {
         assignments: {
@@ -15,66 +15,77 @@ export async function POST() {
             },
           },
         },
+        Score: {
+          where: { scoreType: 'INDIVIDUAL' },
+          include: { team: true },
+        },
       },
     });
 
-    if (!semifinalRound) {
-      return NextResponse.json({ message: 'Semifinal belum dibuat' }, { status: 400 });
-    }
-
-    const teamStats: Record<
+    const teamMap: Record<
       number,
-      { teamId: number; teamName: string; vp: number; score: number }
+      { teamId: number; teamName: string; totalPoints: number; totalScore: number }
     > = {};
 
-    for (const assignment of semifinalRound.assignments) {
-      for (const team of assignment.teamAssignments) {
-        const teamId = team.teamId;
-        if (!teamStats[teamId]) {
-          teamStats[teamId] = { teamId, teamName: team.team.name, vp: 0, score: 0 };
-        }
+    for (const round of semifinalRounds) {
+      const roomScores = round.assignments.map(assignment => {
+        const teamsInRoom = assignment.teamAssignments.map(ta => {
+          const teamId = ta.teamId;
+          const scores = round.Score.filter(s => s.teamId === teamId);
+          const total = scores.reduce((sum, s) => sum + s.value, 0);
 
-        const match = await prisma.matchResult.findFirst({
-          where: { roundAssignmentId: assignment.id, teamId },
+          return { teamId, teamName: ta.team.name, score: total };
         });
 
-        if (match) {
-          teamStats[teamId].vp += match.points;
-          teamStats[teamId].score += match.totalScore;
+        const ranked = [...teamsInRoom].sort((a, b) => b.score - a.score);
+        return ranked.map((team, idx) => {
+          const rank = idx + 1;
+          const points = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
+          return { ...team, points };
+        });
+      });
+
+      for (const room of roomScores) {
+        for (const team of room) {
+          if (!teamMap[team.teamId]) {
+            teamMap[team.teamId] = {
+              teamId: team.teamId,
+              teamName: team.teamName,
+              totalPoints: 0,
+              totalScore: 0,
+            };
+          }
+          teamMap[team.teamId].totalPoints += team.points;
+          teamMap[team.teamId].totalScore += team.score;
         }
       }
     }
 
-    const top4 = Object.values(teamStats)
-      .sort((a, b) => (b.vp !== a.vp ? b.vp - a.vp : b.score - a.score))
+    const top4 = Object.values(teamMap)
+      .sort((a, b) =>
+        b.totalPoints === a.totalPoints
+          ? b.totalScore - a.totalScore
+          : b.totalPoints - a.totalPoints
+      )
       .slice(0, 4);
-
-    if (top4.length < 4) {
-      return NextResponse.json(
-        { message: 'Kurang dari 4 tim lolos ke grand final' },
-        { status: 400 }
-      );
-    }
 
     const existingFinal = await prisma.round.findFirst({ where: { number: 5 } });
     if (existingFinal) {
-      return NextResponse.json({ message: 'Grand final sudah ada' }, { status: 400 });
+      return NextResponse.json({ message: 'Grand final round already exists' }, { status: 400 });
     }
 
-    const grandfinal = await prisma.round.create({
+    const grandFinal = await prisma.round.create({
       data: { name: 'Grand Final', number: 5 },
     });
 
     const room = await prisma.room.findFirst({ orderBy: { id: 'asc' } });
     if (!room) {
-      return NextResponse.json({ message: 'Tidak ada ruangan tersedia' }, { status: 400 });
+      return NextResponse.json({ message: 'No room available' }, { status: 400 });
     }
 
     const assignment = await prisma.roundAssignment.create({
-      data: { roundId: grandfinal.id, roomId: room.id },
+      data: { roundId: grandFinal.id, roomId: room.id },
     });
-
-    const positions: DebatePosition[] = ['OG', 'OO', 'CG', 'CO'];
 
     await Promise.all(
       top4.map((team, i) =>
@@ -82,18 +93,18 @@ export async function POST() {
           data: {
             roundAssignmentId: assignment.id,
             teamId: team.teamId,
-            position: positions[i],
+            position: ['OG', 'OO', 'CG', 'CO'][i] as DebatePosition,
           },
         })
       )
     );
 
     return NextResponse.json({
-      message: 'Grand final berhasil dibuat',
-      teamIds: top4.map(t => t.teamId),
+      message: 'Grand final bracket created successfully',
+      roundId: grandFinal.id,
     });
-  } catch (error) {
-    console.error(error);
-    return NextResponse.json({ message: 'Terjadi error' }, { status: 500 });
+  } catch (err) {
+    console.error(err);
+    return NextResponse.json({ message: 'Error generating grand final bracket' }, { status: 500 });
   }
 }
