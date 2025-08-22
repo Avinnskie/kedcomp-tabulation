@@ -59,7 +59,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: 'You are not assigned to this round' }, { status: 403 });
     }
 
-    const isGrandFinal = assignment.round.number === 5;
+    // Perbaikan bug: Deteksi Grand Final berdasarkan nama round atau number 6
+    // Karena Semifinal menggunakan number 5, Grand Final menggunakan number 6
+    const isGrandFinal = assignment.round.name.toLowerCase() === 'grand final' || assignment.round.number === 6;
 
     // Grand Final special rule:
     if (isGrandFinal) {
@@ -76,7 +78,7 @@ export async function POST(req: Request) {
         );
       }
     } else {
-      // Normal round rule (per judge)
+      // Normal round rule (per judge) - berlaku untuk Semifinal dan rounds lainnya
       const existing = await withRetry(() =>
         prisma.score.findFirst({
           where: {

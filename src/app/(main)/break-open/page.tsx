@@ -40,7 +40,7 @@ export default function BreakSemifinalPage() {
         }
         return b.totalPoints - a.totalPoints;
       })
-      .slice(0, 8);
+      .slice(0, 16);
 
     setTopTeams(sorted);
   };
@@ -49,7 +49,7 @@ export default function BreakSemifinalPage() {
     setLoading(true);
     setError('');
     try {
-      const res = await fetch('/api/break/generate', { method: 'POST' });
+      const res = await fetch('/api/break/quarter', { method: 'POST' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || 'Failed to generate');
       setGenerated(true);
@@ -68,7 +68,7 @@ export default function BreakSemifinalPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <h1 className="text-2xl font-bold">🏆 Teams Qualify for the Semifinals</h1>
+      <h1 className="text-2xl font-bold">🏆 Teams Qualify for the Quarter Final</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {topTeams.map((team, i) => (
@@ -103,7 +103,7 @@ export default function BreakSemifinalPage() {
               )}
             </TooltipTrigger>
             <TooltipContent side="left">
-              <p>Generate Bracket Grand Final</p>
+              <p>Generate Bracket Semi Final</p>
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -4,15 +4,13 @@ import { NextResponse } from 'next/server';
 
 export async function POST() {
   try {
-    // Ambil semua round semifinal (number === 4)
+    // Ambil semua round semifinal (number === 5)
     const semifinalRounds = await prisma.round.findMany({
-      where: { number: 4 },
+      where: { number: 5 },
       include: {
         assignments: {
           include: {
-            teamAssignments: {
-              include: { team: true },
-            },
+            teamAssignments: { include: { team: true } },
           },
         },
         Score: {
@@ -22,42 +20,33 @@ export async function POST() {
       },
     });
 
+    if (semifinalRounds.length === 0) {
+      return NextResponse.json({ message: 'Semifinal not found' }, { status: 400 });
+    }
+
     const teamMap: Record<
       number,
       { teamId: number; teamName: string; totalPoints: number; totalScore: number }
     > = {};
 
     for (const round of semifinalRounds) {
-      const roomScores = round.assignments.map(assignment => {
+      for (const assignment of round.assignments) {
         const teamsInRoom = assignment.teamAssignments.map(ta => {
           const teamId = ta.teamId;
           const scores = round.Score.filter(s => s.teamId === teamId);
           const total = scores.reduce((sum, s) => sum + s.value, 0);
-
           return { teamId, teamName: ta.team.name, score: total };
         });
 
         const ranked = [...teamsInRoom].sort((a, b) => b.score - a.score);
-        return ranked.map((team, idx) => {
-          const rank = idx + 1;
-          const points = rank === 1 ? 3 : rank === 2 ? 2 : rank === 3 ? 1 : 0;
-          return { ...team, points };
-        });
-      });
-
-      for (const room of roomScores) {
-        for (const team of room) {
+        ranked.forEach((team, idx) => {
+          const points = idx === 0 ? 3 : idx === 1 ? 2 : idx === 2 ? 1 : 0;
           if (!teamMap[team.teamId]) {
-            teamMap[team.teamId] = {
-              teamId: team.teamId,
-              teamName: team.teamName,
-              totalPoints: 0,
-              totalScore: 0,
-            };
+            teamMap[team.teamId] = { teamId: team.teamId, teamName: team.teamName, totalPoints: 0, totalScore: 0 };
           }
-          teamMap[team.teamId].totalPoints += team.points;
+          teamMap[team.teamId].totalPoints += points;
           teamMap[team.teamId].totalScore += team.score;
-        }
+        });
       }
     }
 
@@ -69,13 +58,13 @@ export async function POST() {
       )
       .slice(0, 4);
 
-    const existingFinal = await prisma.round.findFirst({ where: { number: 5 } });
+    const existingFinal = await prisma.round.findFirst({ where: { number: 6 } });
     if (existingFinal) {
       return NextResponse.json({ message: 'Grand final round already exists' }, { status: 400 });
     }
 
     const grandFinal = await prisma.round.create({
-      data: { name: 'Grand Final', number: 5 },
+      data: { name: 'Grand Final', number: 6 },
     });
 
     const room = await prisma.room.findFirst({ orderBy: { id: 'asc' } });

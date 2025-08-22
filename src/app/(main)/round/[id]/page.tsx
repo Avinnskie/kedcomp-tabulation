@@ -22,8 +22,8 @@ export default function RoundPage() {
   const [data, setData] = useState<RoundData | null>(null);
   const [loading, setLoading] = useState(true);
 
-  const [teamScores, setTeamScores] = useState<Record<number, number>>({});
-  const [individualScores, setIndividualScores] = useState<Record<number, Record<number, number>>>(
+  const [teamScores, setTeamScores] = useState<Record<number, string>>({});
+  const [individualScores, setIndividualScores] = useState<Record<number, Record<number, string>>>(
     {}
   );
 
@@ -62,13 +62,13 @@ export default function RoundPage() {
         roundAssignmentId: Number(id),
         teamScores: Object.entries(teamScores).map(([teamId, value]) => ({
           teamId: Number(teamId),
-          value,
+          value: value === '' ? 0 : Number(value), // kalau kosong anggap 0
         })),
         individualScores: Object.entries(individualScores).flatMap(([teamId, scores]) =>
           Object.entries(scores).map(([participantId, value]) => ({
             teamId: Number(teamId),
             participantId: Number(participantId),
-            value,
+            value: value === '' ? 0 : Number(value),
           }))
         ),
       };
@@ -113,7 +113,12 @@ export default function RoundPage() {
             <input
               type="number"
               value={teamScores[team.id] ?? ''}
-              onChange={e => setTeamScores({ ...teamScores, [team.id]: Number(e.target.value) })}
+              onChange={e =>
+                setTeamScores({
+                  ...teamScores,
+                  [team.id]: e.target.value, // simpan string
+                })
+              }
               className="border p-2 w-full"
             />
           </label>
@@ -130,7 +135,7 @@ export default function RoundPage() {
                     ...prev,
                     [team.id]: {
                       ...(prev[team.id] || {}),
-                      [p.id]: Number(e.target.value),
+                      [p.id]: e.target.value, // simpan string
                     },
                   }))
                 }

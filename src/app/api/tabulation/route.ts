@@ -29,14 +29,17 @@ export async function GET() {
 
   const individualScores = allScores.filter(s => s.scoreType === 'INDIVIDUAL');
 
+  // === MAPS ===
   const prelimTeamMap: Record<number, any> = {};
-  const breakTeamMap: Record<number, any> = {};
+  const quarterTeamMap: Record<number, any> = {};
+  const semifinalTeamMap: Record<number, any> = {};
   const grandFinalTeamMap: Record<number, any> = {};
 
   for (const round of rounds) {
     const isPrelim = round.number < 4;
-    const isBreak = round.number === 4;
-    const isGrandFinal = round.number === 5;
+    const isQuarter = round.number === 4;
+    const isSemifinal = round.number === 5;
+    const isGrandFinal = round.number === 6;
 
     for (const assignment of round.assignments) {
       const teamScores = assignment.teamAssignments
@@ -62,11 +65,13 @@ export async function GET() {
 
         const map = isPrelim
           ? prelimTeamMap
-          : isBreak
-            ? breakTeamMap
-            : isGrandFinal
-              ? grandFinalTeamMap
-              : undefined;
+          : isQuarter
+            ? quarterTeamMap
+            : isSemifinal
+              ? semifinalTeamMap
+              : isGrandFinal
+                ? grandFinalTeamMap
+                : undefined;
 
         if (!map) return;
 
@@ -91,6 +96,7 @@ export async function GET() {
     }
   }
 
+  // === Helper Sort ===
   const toSortedArray = (map: Record<number, any>) =>
     Object.entries(map)
       .map(([teamId, data]) => ({ teamId: Number(teamId), ...data }))
@@ -101,10 +107,11 @@ export async function GET() {
       );
 
   const teamTabulationPrelim = toSortedArray(prelimTeamMap);
-  const teamTabulationBreak = toSortedArray(breakTeamMap);
+  const teamTabulationQuarter = toSortedArray(quarterTeamMap);
+  const teamTabulationSemifinal = toSortedArray(semifinalTeamMap);
   const teamTabulationGrandFinal = toSortedArray(grandFinalTeamMap);
 
-  // INDIVIDUAL
+  // === INDIVIDUAL TABULATION ===
   const individualMap: Record<number, any> = {};
 
   for (const score of individualScores) {
@@ -136,7 +143,8 @@ export async function GET() {
 
   return NextResponse.json({
     teamTabulationPrelim,
-    teamTabulationBreak,
+    teamTabulationQuarter,
+    teamTabulationSemifinal,
     teamTabulationGrandFinal,
     individualTabulation,
   });

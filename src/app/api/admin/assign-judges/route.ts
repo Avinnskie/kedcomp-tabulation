@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
       });
 
       if (assignment.round.number === 4) {
-        // Semifinal: 1 judge
+        // Quarter Final: 1 judge
         await prisma.roundAssignment.update({
           where: { id: assignmentId },
           data: {
@@ -80,6 +80,16 @@ export async function POST(req: NextRequest) {
       }
 
       if (assignment.round.number === 5) {
+        // Semifinal: 1 judge
+        await prisma.roundAssignment.update({
+          where: { id: assignmentId },
+          data: {
+            judgeId: judgeIds?.[0] ?? null,
+          },
+        });
+      }
+
+      if (assignment.round.number === 6) {
         // Grand Final: 1 judge
         await prisma.roundAssignment.update({
           where: { id: assignmentId },
