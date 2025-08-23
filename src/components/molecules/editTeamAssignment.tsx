@@ -227,7 +227,8 @@ export default function EditTeamAssignment() {
       return {
         ...team,
         displayName: `${team.name} (Already in ${assignmentInCurrentRound.roomName} - ${assignmentInCurrentRound.position})`,
-        isConflict: true
+        isConflict: true,
+        isFromOtherRound: false,
       };
     }
 
@@ -240,14 +241,17 @@ export default function EditTeamAssignment() {
       return {
         ...team,
         displayName: `${team.name} (From ${assignmentInOtherRound.roundName} - ${assignmentInOtherRound.roomName})`,
-        isFromOtherRound: true
+        isFromOtherRound: true,
+        isConflict: false,
       };
     }
 
     return {
       ...team,
       displayName: team.name,
-      isAvailable: true
+      isAvailable: true,
+      isConflict: false,
+      isFromOtherRound: false,
     };
   };
 
