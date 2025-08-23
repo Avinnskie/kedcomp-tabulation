@@ -3,6 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import EditRoomAssignment from '@/src/components/molecules/editRoomAssignment';
+import EditParticipant from '@/src/components/molecules/editParticipant';
+import EditTeamAssignment from '@/src/components/molecules/editTeamAssignment';
 
 export default function AdminPage() {
   const [teamName, setTeamName] = useState('');
@@ -137,6 +140,9 @@ export default function AdminPage() {
           <TabsTrigger value="judge">Add Judge</TabsTrigger>
           <TabsTrigger value="room">Add Room</TabsTrigger>
           <TabsTrigger value="motion">Edit Motion</TabsTrigger>
+          <TabsTrigger value="assignment">Edit Assignment</TabsTrigger>
+          <TabsTrigger value="participant">Edit Participant</TabsTrigger>
+          <TabsTrigger value="team-assignment">Team Assignment</TabsTrigger>
         </TabsList>
 
         {/* Create Team Tab */}
@@ -296,6 +302,21 @@ export default function AdminPage() {
               ))}
             </div>
           )}
+        </TabsContent>
+
+        {/* Edit Assignment Tab */}
+        <TabsContent value="assignment">
+          <EditRoomAssignment />
+        </TabsContent>
+
+        {/* Edit Participant Tab */}
+        <TabsContent value="participant">
+          <EditParticipant />
+        </TabsContent>
+
+        {/* Edit Team Assignment Tab */}
+        <TabsContent value="team-assignment">
+          <EditTeamAssignment />
         </TabsContent>
       </Tabs>
     </div>

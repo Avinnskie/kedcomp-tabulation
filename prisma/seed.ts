@@ -6,131 +6,227 @@ const prisma = new PrismaClient();
 const teams = [
   {
     name: 'MAN 1 A',
-    participants: ['Eli Yunisa Putri', 'Rubayyi Chaira'],
+    participants: [
+      { name: 'Eli Yunisa Putri', email: 'eliyunisa09@gmail.com' },
+      { name: 'Rubayyi Chaira', email: 'rubayyi.chaira@gmail.com' },
+    ],
   },
   {
     name: 'MAN 1 B',
-    participants: ['Muhamad Ali Akbar', 'Puan Zahra Alifah'],
+    participants: [
+      { name: 'Muhamad Ali Akbar', email: 'muhamadaliakbarrama@gmail.com' },
+      { name: 'Puan Zahra Alifah', email: 'zrazaratra@gmail.com' },
+    ],
   },
   {
     name: 'MAN 1 C',
-    participants: ['Muhammad Hafidz Rayyan', 'Aulia Nurfadilah'],
+    participants: [
+      { name: 'Muhammad Hafidz Rayyan', email: 'mhafidzrayyan@gmail.com' },
+      { name: 'Aulia Nurfadilah', email: 'aulianurfadilah229@gmail.com' },
+    ],
   },
   {
     name: 'SMAN 4 PONTIANAK',
-    participants: ['Christine Kabang Pabiring', 'Andrea Thalita Putri'],
+    participants: [
+      { name: 'Christine Kabang Pabiring', email: 'christinekabang@gmail.com' },
+      { name: 'Andrea Thalita Putri', email: 'andreathalitaputri@gmail.com' },
+    ],
   },
   {
     name: 'SMA PELITA CEMERLANG',
-    participants: ['Nadya Belza Hokianto', 'Callista Adelia Gracia'],
+    participants: [
+      { name: 'Nadya Belza Hokianto', email: 'n4dy4bh2015.sdpc@gmail.com' },
+      { name: 'Elaine Herry', email: 'elaineherry@gmail.com' },
+    ],
   },
   {
     name: 'SMAN 1 PONTIANAK',
-    participants: ['Callysta Annur Ramadhani', 'Carla Martha Harahap'],
+    participants: [
+      { name: 'Callysta Annur Ramadhani', email: 'lystaar21@gmail.com' },
+      { name: 'Carla Martha Harahap', email: 'carlamrth@gmail.com' },
+    ],
   },
   {
-    name: 'SMA SANTO PETRUS PONTIANAK',
-    participants: ['Nadine Angelina Sihombing', 'Raisha Alifah Rachmadani'],
+    name: 'SMA KRISTEN MARANATHA A',
+    participants: [
+      { name: 'Diego Nathan', email: 'diegonathan620@gmail.com' },
+      { name: 'Aulia Anggrea', email: 'lialialiaa222@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 3 PONTIANAK',
-    participants: ['Zahra Arsyila Putri', 'Zulfa Rahmadani'],
+    name: 'SMA KRISTEN MARANATHA B',
+    participants: [
+      { name: 'Richard Lucius Hendri', email: 'richhendri479@gmail.com' },
+      { name: 'Jo Felicia Hendri', email: 'Hendri.johni75@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 6 PONTIANAK',
-    participants: ['Aisha Khalisa Putri', 'Siti Maisaroh'],
-  },
-  {
-    name: 'SMA IT AL-AZHAR',
-    participants: ['Dewi Ayu Lestari', 'Rizky Fadhilah'],
-  },
-  {
-    name: 'SMAN 2 PONTIANAK',
-    participants: ['Nurhaliza Putri', 'Syifa Ananda'],
-  },
-  {
-    name: 'SMAN 5 PONTIANAK',
-    participants: ['Anisa Rahmawati', 'Mira Safitri'],
-  },
-  {
-    name: 'SMAN 7 PONTIANAK',
-    participants: ['Rani Puspita', 'Dini Kusuma'],
-  },
-  {
-    name: 'SMAN 8 PONTIANAK',
-    participants: ['Tasya Nur Aini', 'Laila Amalia'],
-  },
-  {
-    name: 'SMK NEGERI 1 PONTIANAK',
-    participants: ['Rahmat Hidayat', 'Farhan Nur'],
-  },
-  {
-    name: 'SMK NEGERI 2 PONTIANAK',
-    participants: ['Indah Putri', 'Nadia Salsabila'],
-  },
-  {
-    name: 'SMK NEGERI 3 PONTIANAK',
-    participants: ['Fitriani', 'Melati Anggraini'],
-  },
-  {
-    name: 'SMAN 9 PONTIANAK',
-    participants: ['Cindy Marlina', 'Putri Ayu'],
+    name: 'SMA GEMBALA BAIK',
+    participants: [
+      { name: 'Queency Evelyn', email: 'queencyevelyn.glx2018@gmail.com' },
+      { name: 'Quinsha Gaylen Yang', email: 'cahenile@gmail.com' },
+    ],
   },
   {
     name: 'SMAN 10 PONTIANAK',
-    participants: ['Aulia Ramadhani', 'Febriani'],
+    participants: [
+      { name: 'Alicia Shofi Destiani', email: 'aliciashofi04@gmail.com' },
+      { name: 'Raisya Adinda Putri', email: 'rsdndptr@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 11 PONTIANAK',
-    participants: ['Della Rachma', 'Nisrina'],
+    name: 'SMA KRISTEN IMMANUEL A',
+    participants: [
+      { name: 'Hana Winola', email: 'hanawinola15@gmail.com' },
+      { name: 'Cheryl MIchella', email: 'cherylmichella0@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 12 PONTIANAK',
-    participants: ['Salsabila', 'Nadia Putri'],
+    name: 'SMA KRISTEN IMMANUEL B',
+    participants: [
+      { name: 'Emmeline Elva Salim', email: 'emmeline.elva@gmail.com' },
+      { name: 'Aileen Tricia', email: 'aileentricia23@gmail.com' },
+    ],
   },
   {
-    name: 'SMA MUHAMMADIYAH 1',
-    participants: ['Iqbal Pratama', 'Arif Kurniawan'],
+    name: 'SMA KRISTEN IMMANUEL C',
+    participants: [
+      { name: 'Cheryll Girry Narenswari', email: 'cheryllnaren@gmail.com' },
+      { name: 'Callysta Florencia', email: 'callystaflo999@gmail.com' },
+    ],
   },
   {
-    name: 'SMA MUHAMMADIYAH 2',
-    participants: ['Putra Adi', 'Hafidz Ramadhan'],
+    name: 'SMAK IMMANUEL BILINGUAL CLASS A',
+    participants: [
+      { name: 'Quincy Wynelle Zeng', email: 'zengquincy@gmail.com' },
+      { name: 'Monday Kenza Chung', email: 'mondaykenza@gmail.com' },
+    ],
   },
   {
-    name: 'SMA KATOLIK SANTO PAULUS',
-    participants: ['Clara Natalia', 'Maria Gabriela'],
+    name: 'SMAK IMMANUEL BILINGUAL CLASS B',
+    participants: [
+      { name: 'Erica Varrell', email: 'Ericavarrell2@gmail.com' },
+      { name: 'Jonathan Simangunsong', email: 'jonathan.044@ski.sch.id' },
+    ],
   },
   {
-    name: 'SMA KRISTEN IMMANUEL',
-    participants: ['Daniel Fernando', 'Jonathan Samuel'],
+    name: 'SMK KRISTEN IMMANUEL PONTIANAK A',
+    participants: [
+      { name: 'Verity', email: 'Veritylim08@gmail.com' },
+      { name: 'Nathan Andrew', email: 'nthandrw2659@gmail.com' },
+    ],
   },
   {
-    name: 'SMA HARAPAN BANGSA',
-    participants: ['Natasya', 'Felicia'],
+    name: 'SMK KRISTEN IMMANUEL PONTIANAK B',
+    participants: [
+      { name: 'Cherry Gita', email: 'cheeryy2ndbrain@gmail.com' },
+      { name: 'Callista Elisabeth', email: 'callis.5183@gmail.com' },
+    ],
   },
   {
-    name: 'SMA TERPADU NURUL FIKRI',
-    participants: ['Fauzan Hakim', 'Hilman'],
+    name: 'SMK KRISTEN IMMANUEL PONTIANAK C',
+    participants: [
+      { name: 'Elvida Adeo Gratia', email: 'elvida.002@ski.sch.id' },
+      { name: 'Fidelyn Adeo Gratia', email: 'fidelyn.001@ski.sch.id' },
+    ],
   },
   {
-    name: 'SMAN 13 PONTIANAK',
-    participants: ['Yuliana', 'Devi Putri'],
+    name: 'SMK KRISTEN IMMANUEL PONTIANAK D',
+    participants: [
+      { name: 'Ayumi Fiorine Hendro', email: 'ayumifioh@gmail.com' },
+      { name: 'Clayni Crhislie', email: 'sanwiceisniceee@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 14 PONTIANAK',
-    participants: ['Novi Rahma', 'Tiara Aulia'],
+    name: 'SMA TUNAS BANGSA',
+    participants: [
+      { name: 'Li Yung Chih', email: 'theothermichaelbryan@gmail.com' },
+      { name: 'Ridha Isabella', email: 'isabellaridha311@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 15 PONTIANAK',
-    participants: ['Mega Putri', 'Kartika'],
+    name: 'SMAN 1 RASAU JAYA',
+    participants: [
+      { name: 'Destia Isyana Floweriska', email: 'riskasyanafloewieezeaaa@gmail.com' },
+      { name: 'Rindi Septiani Putri', email: 'rindiseptianiputri@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 16 PONTIANAK',
-    participants: ['Rizky Ananda', 'Dicky Saputra'],
+    name: 'SMAN 2 PONTIANAK',
+    participants: [
+      { name: 'Nur Winda', email: 'nurwinda158@gmail.com' },
+      { name: 'Muhammad Nabil Baldassare', email: 'nabilbaldassare@gmail.com' },
+    ],
   },
   {
-    name: 'SMAN 17 PONTIANAK',
-    participants: ['Ananda', 'Saputra'],
+    name: 'SMK KRISTEN IMMANUEL II',
+    participants: [
+      { name: 'Jonathan Pratama', email: 'Jonathan.031@ski.sch.id' },
+      { name: 'Steven Andrean', email: 'steven.019@ski.sch.id' },
+    ],
+  },
+  {
+    name: 'MAS DARUSSALAM A',
+    participants: [
+      { name: 'Nabila Fahriyah Kurniawan', email: 'nabila.fahriyah@gmail.com' },
+      { name: 'Qhyren Wahyu Ramadhan', email: 'qhyren.wahyu@gmail.com' },
+    ],
+  },
+  {
+    name: 'MAS DARUSSALAM B',
+    participants: [
+      { name: 'Benri Siraaj Aliyya Firaas', email: 'benri.siraaj@gmail.com' },
+      { name: 'Raffi Ahmad', email: 'raffi.ahmad@gmail.com' },
+    ],
+  },
+  {
+    name: 'MAN 2 PONTIANAK A',
+    participants: [
+      { name: 'Nailah Farah Diva', email: 'nailahfarah2018@gmail.com' },
+      { name: 'Aisya Zahratussyita', email: 'shazhr.09@gmail.com' },
+    ],
+  },
+  {
+    name: 'MAN 2 PONTIANAK B',
+    participants: [
+      { name: 'Diaz Rafadika', email: 'diazrafadika986@gmail.com' },
+      { name: 'Chayara Alimah Asraruddin', email: 'yara.catcrunch@gmail.com' },
+    ],
+  },
+  {
+    name: 'SMAN 5 PONTIANAK',
+    participants: [
+      { name: 'Pricilla Kiara Abelista', email: 'pricilkiara39@gmail.com' },
+      { name: 'Rebecca Timothy Purwanto', email: 'beccabecca886@gmail.com' },
+    ],
+  },
+  {
+    name: 'SMAN 9 PONTIANAK',
+    participants: [
+      { name: 'Marvel Dinata', email: 'marvel.dinata.0@gmail.com' },
+      { name: 'Rafael Phiniel Sianturi', email: 'rafaelphinielsianturi7@gmail.com' },
+    ],
+  },
+  {
+    name: 'SMK SANTA MARIA PONTIANAK A',
+    participants: [
+      { name: 'Kirei Sung', email: 'kireisung.2425@sanmar.sch.id' },
+      { name: 'Jason Tariandi', email: 'jasontariandi.2425@sanmar.sch.id' },
+    ],
+  },
+  {
+    name: 'SMK SANTA MARIA PONTIANAK B',
+    participants: [
+      { name: 'Velizia Avanza', email: 'veliziavanza.2425@sanmar.sch.id' },
+      { name: 'Laura Josephine Aurelia Yasintus', email: 'laura.2425@sanmar.sch.id' },
+    ],
+  },
+  {
+    name: 'SMKN 4 PONTIANAK',
+    participants: [
+      { name: 'Aliftha Adly Pradana', email: 'alifthaadlypradana0@gmail.com' },
+      { name: 'Muhammad Alif Alghifari', email: 'zoomalghifari@gmail.com' },
+    ],
   },
 ];
 
@@ -141,8 +237,8 @@ async function createTeams() {
         name: team.name,
         participants: {
           create: team.participants.map(p => ({
-            name: p,
-            email: `${p.toLowerCase().replace(/\s+/g, '')}@kedcomp.com`,
+            name: p.name,
+            email: p.email,
           })),
         },
       },
