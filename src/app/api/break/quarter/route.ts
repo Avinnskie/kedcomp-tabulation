@@ -145,12 +145,19 @@ export async function POST(request: Request) {
 
     // Create or get rooms for quarterfinal
     const rooms = await Promise.all(
-      roomPairings.map((_, idx) => {
-        return prisma.room.upsert({
-          where: { name: `Quarterfinal Room ${idx + 1}` },
-          create: { name: `Quarterfinal Room ${idx + 1}` },
-          update: {},
+      roomPairings.map(async (_, idx) => {
+        const roomName = `Quarterfinal Room ${idx + 1}`;
+        // Check if room already exists
+        let room = await prisma.room.findFirst({
+          where: { name: roomName }
         });
+        // If room doesn't exist, create it
+        if (!room) {
+          room = await prisma.room.create({
+            data: { name: roomName }
+          });
+        }
+        return room;
       })
     );
 

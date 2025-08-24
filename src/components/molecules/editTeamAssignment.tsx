@@ -79,7 +79,7 @@ export default function EditTeamAssignment() {
       // Show all if no round selected
       fetchData();
     }
-  }, [selectedRoundId]);
+  }, [selectedRoundId, data]);
 
   const fetchData = async () => {
     try {

@@ -1,13 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Trash2, Plus, Save, RefreshCw } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 
@@ -59,12 +71,12 @@ export default function ManualTeamAssignment() {
   const [availableTeams, setAvailableTeams] = useState<Team[]>([]);
   const [existingAssignments, setExistingAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(false);
-  
+
   // Dialog states for creating new assignment
   const [showNewAssignmentDialog, setShowNewAssignmentDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<string>('');
   const [selectedTeams, setSelectedTeams] = useState<number[]>([]);
-  
+
   // Room management states
   const [showRoomDialog, setShowRoomDialog] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
@@ -75,11 +87,11 @@ export default function ManualTeamAssignment() {
     fetchRounds();
   }, []);
 
-  useEffect(() => {
-    if (selectedRound) {
-      fetchAssignmentData();
-    }
-  }, [selectedRound]);
+  // useEffect(() => {
+  //   if (selectedRound) {
+  //     fetchAssignmentData();
+  //   }
+  // }, [selectedRound, fetchAssignmentData]);
 
   const fetchRounds = async () => {
     try {
@@ -91,14 +103,14 @@ export default function ManualTeamAssignment() {
     }
   };
 
-  const fetchAssignmentData = async () => {
+  const fetchAssignmentData = useCallback(async () => {
     if (!selectedRound) return;
-    
+
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/manual-assignment?roundId=${selectedRound}`);
       const data = await res.json();
-      
+
       if (res.ok) {
         setRooms(data.rooms);
         setAvailableTeams(data.availableTeams);
@@ -111,7 +123,13 @@ export default function ManualTeamAssignment() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedRound]);
+
+  useEffect(() => {
+    if (selectedRound) {
+      fetchAssignmentData();
+    }
+  }, [selectedRound, fetchAssignmentData]);
 
   const handleCreateAssignment = async () => {
     if (!selectedRound || !selectedRoom || selectedTeams.length !== 4) {
@@ -126,8 +144,8 @@ export default function ManualTeamAssignment() {
         body: JSON.stringify({
           roundId: parseInt(selectedRound),
           roomId: parseInt(selectedRoom),
-          teams: selectedTeams.map(teamId => ({ teamId }))
-        })
+          teams: selectedTeams.map(teamId => ({ teamId })),
+        }),
       });
 
       const data = await res.json();
@@ -153,7 +171,7 @@ export default function ManualTeamAssignment() {
 
     try {
       const res = await fetch(`/api/admin/manual-assignment?assignmentId=${assignmentId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
 
       const data = await res.json();
@@ -180,7 +198,7 @@ export default function ManualTeamAssignment() {
       const res = await fetch('/api/admin/rooms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newRoomName.trim() })
+        body: JSON.stringify({ name: newRoomName.trim() }),
       });
 
       const data = await res.json();
@@ -201,10 +219,10 @@ export default function ManualTeamAssignment() {
   };
 
   const positionColors = {
-    'OG': 'bg-blue-100 text-blue-800',
-    'OO': 'bg-green-100 text-green-800',
-    'CG': 'bg-yellow-100 text-yellow-800',
-    'CO': 'bg-red-100 text-red-800'
+    OG: 'bg-blue-100 text-blue-800',
+    OO: 'bg-green-100 text-green-800',
+    CG: 'bg-yellow-100 text-yellow-800',
+    CO: 'bg-red-100 text-red-800',
   };
 
   return (
@@ -229,21 +247,15 @@ export default function ManualTeamAssignment() {
                   <Input
                     id="roomName"
                     value={newRoomName}
-                    onChange={(e) => setNewRoomName(e.target.value)}
+                    onChange={e => setNewRoomName(e.target.value)}
                     placeholder="Enter room name..."
                   />
                 </div>
                 <div className="flex justify-end gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={() => setShowRoomDialog(false)}
-                  >
+                  <Button variant="outline" onClick={() => setShowRoomDialog(false)}>
                     Cancel
                   </Button>
-                  <Button 
-                    onClick={handleCreateRoom}
-                    disabled={creatingRoom}
-                  >
+                  <Button onClick={handleCreateRoom} disabled={creatingRoom}>
                     {creatingRoom ? 'Creating...' : 'Create Room'}
                   </Button>
                 </div>
@@ -251,8 +263,8 @@ export default function ManualTeamAssignment() {
             </DialogContent>
           </Dialog>
 
-          <Button 
-            onClick={fetchAssignmentData} 
+          <Button
+            onClick={fetchAssignmentData}
             variant="outline"
             disabled={!selectedRound || loading}
           >
@@ -273,7 +285,7 @@ export default function ManualTeamAssignment() {
               <SelectValue placeholder="Select a round..." />
             </SelectTrigger>
             <SelectContent>
-              {rounds.map((round) => (
+              {rounds.map(round => (
                 <SelectItem key={round.id} value={round.id.toString()}>
                   {round.name} (Round {round.number})
                 </SelectItem>
@@ -289,11 +301,9 @@ export default function ManualTeamAssignment() {
           <div className="flex justify-between items-center">
             <div>
               <h3 className="text-lg font-semibold">Available Teams: {availableTeams.length}</h3>
-              <p className="text-sm text-muted-foreground">
-                Teams not yet assigned to this round
-              </p>
+              <p className="text-sm text-muted-foreground">Teams not yet assigned to this round</p>
             </div>
-            
+
             <Dialog open={showNewAssignmentDialog} onOpenChange={setShowNewAssignmentDialog}>
               <DialogTrigger asChild>
                 <Button disabled={availableTeams.length < 4}>
@@ -314,13 +324,16 @@ export default function ManualTeamAssignment() {
                         <SelectValue placeholder="Select a room..." />
                       </SelectTrigger>
                       <SelectContent>
-                        {rooms.filter(room => 
-                          !existingAssignments.some(assignment => assignment.roomId === room.id)
-                        ).map((room) => (
-                          <SelectItem key={room.id} value={room.id.toString()}>
-                            {room.name}
-                          </SelectItem>
-                        ))}
+                        {rooms
+                          .filter(
+                            room =>
+                              !existingAssignments.some(assignment => assignment.roomId === room.id)
+                          )
+                          .map(room => (
+                            <SelectItem key={room.id} value={room.id.toString()}>
+                              {room.name}
+                            </SelectItem>
+                          ))}
                       </SelectContent>
                     </Select>
                   </div>
@@ -329,13 +342,13 @@ export default function ManualTeamAssignment() {
                   <div>
                     <Label>Select Teams (Choose exactly 4)</Label>
                     <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
-                      {availableTeams.map((team) => (
+                      {availableTeams.map(team => (
                         <div key={team.id} className="flex items-center space-x-2">
                           <input
                             type="checkbox"
                             id={`team-${team.id}`}
                             checked={selectedTeams.includes(team.id)}
-                            onChange={(e) => {
+                            onChange={e => {
                               if (e.target.checked) {
                                 if (selectedTeams.length < 4) {
                                   setSelectedTeams([...selectedTeams, team.id]);
@@ -348,7 +361,9 @@ export default function ManualTeamAssignment() {
                           />
                           <label htmlFor={`team-${team.id}`} className="flex-1 text-sm">
                             <strong>{team.name}</strong>
-                            {team.institution && <span className="text-muted-foreground"> - {team.institution}</span>}
+                            {team.institution && (
+                              <span className="text-muted-foreground"> - {team.institution}</span>
+                            )}
                             <div className="text-xs text-muted-foreground">
                               {team.participants.map(p => p.name).join(', ')}
                             </div>
@@ -362,8 +377,8 @@ export default function ManualTeamAssignment() {
                   </div>
 
                   <div className="flex justify-end gap-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={() => {
                         setShowNewAssignmentDialog(false);
                         setSelectedRoom('');
@@ -372,7 +387,7 @@ export default function ManualTeamAssignment() {
                     >
                       Cancel
                     </Button>
-                    <Button 
+                    <Button
                       onClick={handleCreateAssignment}
                       disabled={!selectedRoom || selectedTeams.length !== 4}
                     >
@@ -387,8 +402,10 @@ export default function ManualTeamAssignment() {
 
           {/* Existing Assignments */}
           <div>
-            <h3 className="text-lg font-semibold mb-4">Current Assignments ({existingAssignments.length} rooms)</h3>
-            
+            <h3 className="text-lg font-semibold mb-4">
+              Current Assignments ({existingAssignments.length} rooms)
+            </h3>
+
             {loading ? (
               <div className="text-center py-8">Loading...</div>
             ) : existingAssignments.length === 0 ? (
@@ -396,18 +413,16 @@ export default function ManualTeamAssignment() {
                 <CardContent className="text-center py-8">
                   <p className="text-muted-foreground">No assignments yet for this round.</p>
                   <p className="text-sm text-muted-foreground mt-2">
-                    Click "Assign Teams to Room" to get started.
+                    Click &quot;Assign Teams to Room&quot; to get started.
                   </p>
                 </CardContent>
               </Card>
             ) : (
               <div className="grid gap-4">
-                {existingAssignments.map((assignment) => (
+                {existingAssignments.map(assignment => (
                   <Card key={assignment.id}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-base">
-                        {assignment.roomName}
-                      </CardTitle>
+                      <CardTitle className="text-base">{assignment.roomName}</CardTitle>
                       <Button
                         variant="destructive"
                         size="sm"
@@ -423,9 +438,9 @@ export default function ManualTeamAssignment() {
                         </p>
                       )}
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                        {assignment.teams.map((team) => (
+                        {assignment.teams.map(team => (
                           <div key={team.id} className="flex items-start space-x-2">
-                            <Badge 
+                            <Badge
                               className={`${positionColors[team.position as keyof typeof positionColors]} shrink-0`}
                             >
                               {team.position}
