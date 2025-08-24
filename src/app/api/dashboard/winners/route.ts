@@ -13,7 +13,7 @@ export async function GET() {
       },
     });
 
-    const grandFinalRound = rounds.find(r => r.number === 5);
+    const grandFinalRound = rounds.find(r => r.number === 6);
     const individualScores = allScores.filter(s => s.scoreType === 'INDIVIDUAL');
     const grandFinalScores = individualScores.filter(s => s.roundId === grandFinalRound?.id);
 
@@ -34,7 +34,7 @@ export async function GET() {
       if (!teamMap[key]) {
         teamMap[key] = {
           name: score.team.name,
-          institution: score.team.name || 'Unknown',
+          institution: score.team.institution || score.team.name || 'Unknown',
           grandFinalScore: 0,
           totalScore: 0,
         };
@@ -57,19 +57,23 @@ export async function GET() {
       .sort((a, b) => b.grandFinalScore - a.grandFinalScore)
       .slice(0, 3);
 
-    // Best speaker
+    // Best speaker - hanya dari preliminary rounds (1, 2, 3)
+    const preliminaryRounds = rounds.filter(r => r.number >= 1 && r.number <= 3);
+    const preliminaryRoundIds = preliminaryRounds.map(r => r.id);
+    const preliminaryScores = individualScores.filter(s => preliminaryRoundIds.includes(s.roundId));
+    
     const speakerMap: Record<
       number,
       { name: string; team: string; institution: string; total: number; count: number }
     > = {};
 
-    for (const s of individualScores) {
+    for (const s of preliminaryScores) {
       if (!s.participantId) continue;
       if (!speakerMap[s.participantId]) {
         speakerMap[s.participantId] = {
           name: s.participant.name,
           team: s.participant.team?.name || '',
-          institution: s.participant.team?.name || '',
+          institution: s.participant.team?.institution || s.participant.team?.name || '',
           total: 0,
           count: 0,
         };

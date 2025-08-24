@@ -25,6 +25,7 @@ model User {
 model Team {
   id              Int              @id @default(autoincrement())
   name            String
+  institution     String?
   participants    Participant[]
   scores          Score[]
   matchResults    MatchResult[]

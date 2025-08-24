@@ -6,9 +6,11 @@ import { toast } from 'sonner';
 import EditRoomAssignment from '@/src/components/molecules/editRoomAssignment';
 import EditParticipant from '@/src/components/molecules/editParticipant';
 import EditTeamAssignment from '@/src/components/molecules/editTeamAssignment';
+import ManualTeamAssignment from '@/src/components/molecules/manualTeamAssignment';
 
 export default function AdminPage() {
   const [teamName, setTeamName] = useState('');
+  const [institution, setInstitution] = useState('');
   const [participant1, setParticipant1] = useState({ name: '', email: '' });
   const [participant2, setParticipant2] = useState({ name: '', email: '' });
 
@@ -51,6 +53,7 @@ export default function AdminPage() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         teamName,
+        institution,
         participants: [participant1, participant2],
       }),
     });
@@ -60,6 +63,7 @@ export default function AdminPage() {
     if (res.ok) {
       toast.success('Team created successfully.');
       setTeamName('');
+      setInstitution('');
       setParticipant1({ name: '', email: '' });
       setParticipant2({ name: '', email: '' });
     } else {
@@ -143,6 +147,7 @@ export default function AdminPage() {
           <TabsTrigger value="assignment">Edit Assignment</TabsTrigger>
           <TabsTrigger value="participant">Edit Participant</TabsTrigger>
           <TabsTrigger value="team-assignment">Team Assignment</TabsTrigger>
+          <TabsTrigger value="manual-assignment">Manual Assignment</TabsTrigger>
         </TabsList>
 
         {/* Create Team Tab */}
@@ -157,6 +162,17 @@ export default function AdminPage() {
                 onChange={e => setTeamName(e.target.value)}
                 className="w-full border p-2 rounded"
                 required
+              />
+            </div>
+
+            <div>
+              <label className="block font-semibold">Institution</label>
+              <input
+                type="text"
+                value={institution}
+                onChange={e => setInstitution(e.target.value)}
+                className="w-full border p-2 rounded"
+                placeholder="School/University name (optional)"
               />
             </div>
 
@@ -317,6 +333,11 @@ export default function AdminPage() {
         {/* Edit Team Assignment Tab */}
         <TabsContent value="team-assignment">
           <EditTeamAssignment />
+        </TabsContent>
+
+        {/* Manual Team Assignment Tab */}
+        <TabsContent value="manual-assignment">
+          <ManualTeamAssignment />
         </TabsContent>
       </Tabs>
     </div>
