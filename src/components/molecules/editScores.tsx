@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -58,8 +58,6 @@ interface Score {
   judgeName: string;
   scoreType: 'TEAM' | 'INDIVIDUAL';
   value: number;
-  createdAt: string;
-  updatedAt: string;
 }
 
 interface Round {
@@ -101,11 +99,7 @@ export default function EditScores() {
   const [deletingScore, setDeletingScore] = useState<Score | null>(null);
   const [deleteReason, setDeleteReason] = useState('');
 
-  useEffect(() => {
-    fetchData();
-  }, [selectedRound, searchQuery, currentPage]);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams({
@@ -130,7 +124,11 @@ export default function EditScores() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedRound, searchQuery, currentPage]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
 
   const handleEditScore = async () => {
     if (!editingScore || !newValue) {
@@ -343,7 +341,6 @@ export default function EditScores() {
                 <TableHead>Participant</TableHead>
                 <TableHead>Judge</TableHead>
                 <TableHead className="text-center">Score</TableHead>
-                <TableHead>Last Updated</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -369,14 +366,6 @@ export default function EditScores() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">
-                      {new Date(score.updatedAt).toLocaleDateString()}
-                    </div>
-                    <div className="text-xs text-gray-500">
-                      {new Date(score.updatedAt).toLocaleTimeString()}
-                    </div>
-                  </TableCell>
-                  <TableCell>
                     <div className="flex space-x-2 justify-end">
                       <Button
                         variant="outline"
@@ -399,7 +388,7 @@ export default function EditScores() {
               
               {data?.scores.length === 0 && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center py-8">
+                  <TableCell colSpan={7} className="text-center py-8">
                     No scores found matching your criteria.
                   </TableCell>
                 </TableRow>

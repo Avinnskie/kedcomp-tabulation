@@ -101,8 +101,6 @@ export async function GET(req: NextRequest) {
         judgeName: score.judge.name,
         scoreType: score.scoreType,
         value: score.value,
-        createdAt: score.createdAt,
-        updatedAt: score.updatedAt,
       })),
       pagination: {
         page,
