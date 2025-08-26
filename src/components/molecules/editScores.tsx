@@ -143,12 +143,12 @@ export default function EditScores() {
     }
 
     // Validate score ranges
-    if (editingScore.scoreType === 'TEAM' && (numValue < 0 || numValue > 100)) {
+    if (editingScore.scoreType === 'TEAM' && (numValue < 0 || numValue > 3)) {
       toast.error('Team score must be between 0 and 100');
       return;
     }
 
-    if (editingScore.scoreType === 'INDIVIDUAL' && (numValue < 0 || numValue > 50)) {
+    if (editingScore.scoreType === 'INDIVIDUAL' && (numValue < 0 || numValue > 83)) {
       toast.error('Individual score must be between 0 and 50');
       return;
     }
