@@ -142,7 +142,7 @@ export default function EditScores() {
       return;
     }
 
-    if (editingScore.scoreType === 'TEAM' && (numValue < 0 || numValue > 3)) {
+    if (editingScore.scoreType === 'TEAM' && (numValue < 0 || numValue > 4)) {
       toast.error('Team score must be between 0 and 3');
       return;
     }
