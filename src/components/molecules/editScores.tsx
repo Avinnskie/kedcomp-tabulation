@@ -82,7 +82,7 @@ export default function EditScores() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  
+
   // Filter & Search states
   const [selectedRound, setSelectedRound] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -106,7 +106,7 @@ export default function EditScores() {
         page: currentPage.toString(),
         limit: '20',
       });
-      
+
       if (selectedRound && selectedRound !== 'all') params.append('roundId', selectedRound);
       if (searchQuery) params.append('search', searchQuery);
 
@@ -142,13 +142,12 @@ export default function EditScores() {
       return;
     }
 
-    // Validate score ranges
-    if (editingScore.scoreType === 'TEAM' && (numValue <= 0 || numValue > 3)) {
-      toast.error('Team score must be between 0 and 100');
+    if (editingScore.scoreType === 'TEAM' && (numValue < 0 || numValue > 3)) {
+      toast.error('Team score must be between 0 and 3');
       return;
     }
 
-    if (editingScore.scoreType === 'INDIVIDUAL' && (numValue <= 0 || numValue <= 83)) {
+    if (editingScore.scoreType === 'INDIVIDUAL' && (numValue < 0 || numValue > 83)) {
       toast.error('Individual score must be between 0 and 83');
       return;
     }
@@ -193,7 +192,7 @@ export default function EditScores() {
       const params = new URLSearchParams({
         scoreId: deletingScore.id.toString(),
       });
-      
+
       if (deleteReason.trim()) {
         params.append('reason', deleteReason.trim());
       }
@@ -239,9 +238,15 @@ export default function EditScores() {
   };
 
   const getScoreTypeBadge = (scoreType: string) => {
-    return scoreType === 'TEAM' 
-      ? <Badge variant="default" className="bg-blue-100 text-blue-800">Team</Badge>
-      : <Badge variant="secondary" className="bg-green-100 text-green-800">Individual</Badge>;
+    return scoreType === 'TEAM' ? (
+      <Badge variant="default" className="bg-blue-100 text-blue-800">
+        Team
+      </Badge>
+    ) : (
+      <Badge variant="secondary" className="bg-green-100 text-green-800">
+        Individual
+      </Badge>
+    );
   };
 
   if (loading && !data) {
@@ -304,7 +309,7 @@ export default function EditScores() {
                   id="search"
                   placeholder="Search by team, participant, or judge name..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -325,7 +330,9 @@ export default function EditScores() {
       {data && (
         <div className="text-sm text-gray-600">
           Showing {data.scores.length} of {data.pagination.totalCount} scores
-          {selectedRound && selectedRound !== 'all' && ` in ${data.rounds.find(r => r.id.toString() === selectedRound)?.name}`}
+          {selectedRound &&
+            selectedRound !== 'all' &&
+            ` in ${data.rounds.find(r => r.id.toString() === selectedRound)?.name}`}
         </div>
       )}
 
@@ -345,7 +352,7 @@ export default function EditScores() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {data?.scores.map((score) => (
+              {data?.scores.map(score => (
                 <TableRow key={score.id}>
                   <TableCell>
                     <div className="font-medium">{score.roundName}</div>
@@ -367,11 +374,7 @@ export default function EditScores() {
                   </TableCell>
                   <TableCell>
                     <div className="flex space-x-2 justify-end">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => openEditDialog(score)}
-                      >
+                      <Button variant="outline" size="sm" onClick={() => openEditDialog(score)}>
                         <Edit3 className="h-4 w-4" />
                       </Button>
                       <Button
@@ -385,7 +388,7 @@ export default function EditScores() {
                   </TableCell>
                 </TableRow>
               ))}
-              
+
               {data?.scores.length === 0 && (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-8">
@@ -433,7 +436,7 @@ export default function EditScores() {
           <DialogHeader>
             <DialogTitle>Edit Score</DialogTitle>
           </DialogHeader>
-          
+
           {editingScore && (
             <div className="space-y-4">
               <Alert>
@@ -446,14 +449,26 @@ export default function EditScores() {
               <div className="space-y-2">
                 <Label>Score Details</Label>
                 <div className="bg-gray-50 p-3 rounded text-sm">
-                  <div><strong>Round:</strong> {editingScore.roundName}</div>
-                  <div><strong>Type:</strong> {editingScore.scoreType}</div>
-                  <div><strong>Team:</strong> {editingScore.teamName}</div>
+                  <div>
+                    <strong>Round:</strong> {editingScore.roundName}
+                  </div>
+                  <div>
+                    <strong>Type:</strong> {editingScore.scoreType}
+                  </div>
+                  <div>
+                    <strong>Team:</strong> {editingScore.teamName}
+                  </div>
                   {editingScore.participantName && (
-                    <div><strong>Participant:</strong> {editingScore.participantName}</div>
+                    <div>
+                      <strong>Participant:</strong> {editingScore.participantName}
+                    </div>
                   )}
-                  <div><strong>Judge:</strong> {editingScore.judgeName}</div>
-                  <div><strong>Current Score:</strong> {editingScore.value}</div>
+                  <div>
+                    <strong>Judge:</strong> {editingScore.judgeName}
+                  </div>
+                  <div>
+                    <strong>Current Score:</strong> {editingScore.value}
+                  </div>
                 </div>
               </div>
 
@@ -467,7 +482,7 @@ export default function EditScores() {
                   min="0"
                   max={editingScore.scoreType === 'TEAM' ? 3 : 83}
                   value={newValue}
-                  onChange={(e) => setNewValue(e.target.value)}
+                  onChange={e => setNewValue(e.target.value)}
                   placeholder="Enter new score value"
                 />
               </div>
@@ -477,7 +492,7 @@ export default function EditScores() {
                 <Textarea
                   id="edit-reason"
                   value={editReason}
-                  onChange={(e) => setEditReason(e.target.value)}
+                  onChange={e => setEditReason(e.target.value)}
                   placeholder="Enter reason for this edit..."
                   rows={3}
                 />
@@ -486,17 +501,10 @@ export default function EditScores() {
           )}
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setEditDialogOpen(false)}
-              disabled={updating}
-            >
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={updating}>
               Cancel
             </Button>
-            <Button
-              onClick={handleEditScore}
-              disabled={updating || !newValue}
-            >
+            <Button onClick={handleEditScore} disabled={updating || !newValue}>
               {updating ? (
                 <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
@@ -519,7 +527,7 @@ export default function EditScores() {
           <DialogHeader>
             <DialogTitle>Delete Score</DialogTitle>
           </DialogHeader>
-          
+
           {deletingScore && (
             <div className="space-y-4">
               <Alert className="border-red-200 bg-red-50">
@@ -532,13 +540,23 @@ export default function EditScores() {
               <div className="space-y-2">
                 <Label>Score to Delete</Label>
                 <div className="bg-gray-50 p-3 rounded text-sm">
-                  <div><strong>Round:</strong> {deletingScore.roundName}</div>
-                  <div><strong>Type:</strong> {deletingScore.scoreType}</div>
-                  <div><strong>Team:</strong> {deletingScore.teamName}</div>
+                  <div>
+                    <strong>Round:</strong> {deletingScore.roundName}
+                  </div>
+                  <div>
+                    <strong>Type:</strong> {deletingScore.scoreType}
+                  </div>
+                  <div>
+                    <strong>Team:</strong> {deletingScore.teamName}
+                  </div>
                   {deletingScore.participantName && (
-                    <div><strong>Participant:</strong> {deletingScore.participantName}</div>
+                    <div>
+                      <strong>Participant:</strong> {deletingScore.participantName}
+                    </div>
                   )}
-                  <div><strong>Score:</strong> {deletingScore.value}</div>
+                  <div>
+                    <strong>Score:</strong> {deletingScore.value}
+                  </div>
                 </div>
               </div>
 
@@ -547,7 +565,7 @@ export default function EditScores() {
                 <Textarea
                   id="delete-reason"
                   value={deleteReason}
-                  onChange={(e) => setDeleteReason(e.target.value)}
+                  onChange={e => setDeleteReason(e.target.value)}
                   placeholder="Enter reason for deleting this score..."
                   rows={3}
                 />
