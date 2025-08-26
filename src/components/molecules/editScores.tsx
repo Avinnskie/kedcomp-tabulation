@@ -459,13 +459,13 @@ export default function EditScores() {
 
               <div className="space-y-2">
                 <Label htmlFor="new-value">
-                  New Score Value ({editingScore.scoreType === 'TEAM' ? '0-100' : '0-50'})
+                  New Score Value ({editingScore.scoreType === 'TEAM' ? '0-3' : '0-83'})
                 </Label>
                 <Input
                   id="new-value"
                   type="number"
                   min="0"
-                  max={editingScore.scoreType === 'TEAM' ? 100 : 50}
+                  max={editingScore.scoreType === 'TEAM' ? 3 : 83}
                   value={newValue}
                   onChange={(e) => setNewValue(e.target.value)}
                   placeholder="Enter new score value"
