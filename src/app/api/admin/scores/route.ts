@@ -165,7 +165,7 @@ export async function PUT(req: NextRequest) {
     }
 
     // Additional validation based on score type
-    if (existingScore.scoreType === 'TEAM' && (newValue < 0 || newValue >= 3)) {
+    if (existingScore.scoreType === 'TEAM' && (newValue < 0 || newValue >= 4)) {
       return NextResponse.json({ error: 'Team score must be between 0 and 100' }, { status: 400 });
     }
 
