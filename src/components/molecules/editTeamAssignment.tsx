@@ -270,20 +270,20 @@ export default function EditTeamAssignment() {
     return acc;
   }, {} as Record<string, any>) || {};
 
-  if (loading) {
-    return (
-      <div className="p-6">
-        <div className="animate-pulse">
-          <div className="h-8 bg-gray-300 rounded w-1/4 mb-4"></div>
-          <div className="h-4 bg-gray-300 rounded w-1/2 mb-6"></div>
-          <div className="space-y-4">
-            <div className="h-20 bg-gray-300 rounded w-full"></div>
-            <div className="h-20 bg-gray-300 rounded w-full"></div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // if (loading) {
+  //   return (
+  //     <div className="p-6">
+  //       <div className="animate-pulse">
+  //         <div className="h-8 bg-gray-300 rounded w-1/4 mb-4"></div>
+  //         <div className="h-4 bg-gray-300 rounded w-1/2 mb-6"></div>
+  //         <div className="space-y-4">
+  //           <div className="h-20 bg-gray-300 rounded w-full"></div>
+  //           <div className="h-20 bg-gray-300 rounded w-full"></div>
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (!data) {
     return (

@@ -224,7 +224,7 @@ export default function ManualTeamAssignment() {
         toast.success('Room created successfully');
         setShowRoomDialog(false);
         setNewRoomName('');
-        fetchAssignmentData(); // Refresh data
+        fetchAssignmentData();
       } else {
         toast.error(data.error || 'Failed to create room');
       }
