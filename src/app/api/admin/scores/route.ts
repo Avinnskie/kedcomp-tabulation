@@ -165,11 +165,11 @@ export async function PUT(req: NextRequest) {
     }
 
     // Additional validation based on score type
-    if (existingScore.scoreType === 'TEAM' && (newValue < 0 || newValue > 100)) {
+    if (existingScore.scoreType === 'TEAM' && (newValue < 0 || newValue >= 3)) {
       return NextResponse.json({ error: 'Team score must be between 0 and 100' }, { status: 400 });
     }
 
-    if (existingScore.scoreType === 'INDIVIDUAL' && (newValue < 0 || newValue > 50)) {
+    if (existingScore.scoreType === 'INDIVIDUAL' && (newValue < 0 || newValue >= 83)) {
       return NextResponse.json({ error: 'Individual score must be between 0 and 50' }, { status: 400 });
     }
 
