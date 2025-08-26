@@ -7,6 +7,7 @@ import EditRoomAssignment from '@/src/components/molecules/editRoomAssignment';
 import EditParticipant from '@/src/components/molecules/editParticipant';
 import EditTeamAssignment from '@/src/components/molecules/editTeamAssignment';
 import ManualTeamAssignment from '@/src/components/molecules/manualTeamAssignment';
+import EditScores from '@/src/components/molecules/editScores';
 
 export default function AdminPage() {
   const [teamName, setTeamName] = useState('');
@@ -148,6 +149,7 @@ export default function AdminPage() {
           <TabsTrigger value="participant">Edit Participant</TabsTrigger>
           <TabsTrigger value="team-assignment">Team Assignment</TabsTrigger>
           <TabsTrigger value="manual-assignment">Manual Assignment</TabsTrigger>
+          <TabsTrigger value="edit-scores">Edit Scores</TabsTrigger>
         </TabsList>
 
         {/* Create Team Tab */}
@@ -338,6 +340,11 @@ export default function AdminPage() {
         {/* Manual Team Assignment Tab */}
         <TabsContent value="manual-assignment">
           <ManualTeamAssignment />
+        </TabsContent>
+
+        {/* Edit Scores Tab */}
+        <TabsContent value="edit-scores">
+          <EditScores />
         </TabsContent>
       </Tabs>
     </div>

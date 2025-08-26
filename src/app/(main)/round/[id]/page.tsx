@@ -3,6 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { toast } from 'sonner';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Separator } from '@/components/ui/separator';
+import { AlertCircle, CheckCircle2, Save, User } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 type RoundData = {
   id: number;
@@ -55,20 +63,56 @@ export default function RoundPage() {
     fetchData();
   }, [id, router]);
 
+  // Validation functions
+  const validateTeamScore = (score: string) => {
+    if (score === '') return true; // Allow empty
+    const num = Number(score);
+    return !isNaN(num) && num >= 0 && num <= 100;
+  };
+
+  const validateIndividualScore = (score: string) => {
+    if (score === '') return true; // Allow empty
+    const num = Number(score);
+    return !isNaN(num) && num >= 0 && num <= 50;
+  };
+
+  const isFormValid = () => {
+    // Check if all required fields are filled and valid
+    for (const team of data?.teamAssignments || []) {
+      const teamScore = teamScores[team.team.id];
+      if (!teamScore || !validateTeamScore(teamScore)) {
+        return false;
+      }
+      
+      for (const participant of team.team.participants) {
+        const individualScore = individualScores[team.team.id]?.[participant.id];
+        if (!individualScore || !validateIndividualScore(individualScore)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
   const handleSubmit = async () => {
+    if (!isFormValid()) {
+      toast.error('Please fill all scores with valid values.');
+      return;
+    }
+
     setSubmitting(true);
     try {
       const payload = {
         roundAssignmentId: Number(id),
         teamScores: Object.entries(teamScores).map(([teamId, value]) => ({
           teamId: Number(teamId),
-          value: value === '' ? 0 : Number(value), // kalau kosong anggap 0
+          value: Number(value),
         })),
         individualScores: Object.entries(individualScores).flatMap(([teamId, scores]) =>
           Object.entries(scores).map(([participantId, value]) => ({
             teamId: Number(teamId),
             participantId: Number(participantId),
-            value: value === '' ? 0 : Number(value),
+            value: Number(value),
           }))
         ),
       };
@@ -82,7 +126,7 @@ export default function RoundPage() {
       const json = await res.json();
 
       if (res.ok) {
-        toast.success('Scores submitted successfully.');
+        toast.success('Scores submitted successfully!');
         router.push('/round');
       } else {
         toast.error(json.message || 'Failed to submit scores.');
@@ -94,65 +138,214 @@ export default function RoundPage() {
     }
   };
 
-  if (loading) return <div className="p-6">Loading...</div>;
-  if (!data) return <div className="p-6">No data found or unauthorized.</div>;
+  // Helper function to get position color
+  const getPositionColor = (position: string) => {
+    const colors = {
+      'OG': 'bg-blue-100 text-blue-800 border-blue-300',
+      'OO': 'bg-green-100 text-green-800 border-green-300', 
+      'CG': 'bg-orange-100 text-orange-800 border-orange-300',
+      'CO': 'bg-red-100 text-red-800 border-red-300',
+    };
+    return colors[position as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-300';
+  };
 
-  return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">
-        Penilaian - {data.round.name} - {data.room.name}
-      </h1>
-
-      {data.teamAssignments.map(({ team, position }) => (
-        <div key={team.id} className="border p-4 rounded mb-6">
-          <h2 className="text-lg font-semibold mb-2">
-            {team.name} ({position})
-          </h2>
-          <label className="block mb-2">
-            <span className="text-sm">Team Score:</span>
-            <input
-              type="number"
-              value={teamScores[team.id] ?? ''}
-              onChange={e =>
-                setTeamScores({
-                  ...teamScores,
-                  [team.id]: e.target.value, // simpan string
-                })
-              }
-              className="border p-2 w-full"
-            />
-          </label>
-
-          <h3 className="font-medium mt-4 mb-1">Individual Scores:</h3>
-          {team.participants.map(p => (
-            <label key={p.id} className="block mb-2">
-              <span className="text-sm">{p.name}</span>
-              <input
-                type="number"
-                value={individualScores[team.id]?.[p.id] ?? ''}
-                onChange={e =>
-                  setIndividualScores(prev => ({
-                    ...prev,
-                    [team.id]: {
-                      ...(prev[team.id] || {}),
-                      [p.id]: e.target.value, // simpan string
-                    },
-                  }))
-                }
-                className="border p-2 w-full"
-              />
-            </label>
+  if (loading) {
+    return (
+      <div className="container mx-auto p-6 max-w-4xl">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 bg-gray-300 rounded w-1/2"></div>
+          {[1,2,3,4].map(i => (
+            <Card key={i}>
+              <CardHeader className="h-20 bg-gray-200"></CardHeader>
+              <CardContent className="h-32 bg-gray-100"></CardContent>
+            </Card>
           ))}
         </div>
-      ))}
+      </div>
+    );
+  }
+  
+  if (!data) {
+    return (
+      <div className="container mx-auto p-6 max-w-4xl">
+        <Alert>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            No data found or you are not authorized to access this round.
+          </AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
 
-      <button
-        onClick={handleSubmit}
-        disabled={submitting}
-        className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
-      >
-        {submitting ? 'Submitting...' : 'Submit'}
-      </button>
+  return (
+    <div className="container mx-auto p-6 max-w-4xl space-y-6">
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <h1 className="text-3xl font-bold text-gray-900">
+          Judge Scoring Panel
+        </h1>
+        <div className="flex items-center justify-center space-x-2 text-lg">
+          <Badge variant="outline" className="text-base px-3 py-1">
+            {data.round.name}
+          </Badge>
+          <span className="text-gray-500">•</span>
+          <Badge variant="secondary" className="text-base px-3 py-1">
+            {data.room.name}
+          </Badge>
+        </div>
+      </div>
+
+      {/* Instructions */}
+      <Alert>
+        <CheckCircle2 className="h-4 w-4" />
+        <AlertDescription>
+          Please score each team and individual participant. Team scores range from 0-100, individual scores range from 0-50.
+        </AlertDescription>
+      </Alert>
+
+      {/* Scoring Forms */}
+      <div className="space-y-6">
+        {data.teamAssignments.map(({ team, position }) => {
+          const teamScore = teamScores[team.id] ?? '';
+          const teamScoreValid = validateTeamScore(teamScore);
+          
+          return (
+            <Card key={team.id} className="overflow-hidden">
+              <CardHeader className={`${getPositionColor(position)} border-b`}>
+                <CardTitle className="flex items-center justify-between">
+                  <div className="flex items-center space-x-3">
+                    <Badge className={`${getPositionColor(position)} border`}>
+                      {position}
+                    </Badge>
+                    <span className="text-xl font-bold">{team.name}</span>
+                  </div>
+                  <div className="text-sm font-normal opacity-75">
+                    {team.participants.length} participants
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              
+              <CardContent className="p-6 space-y-6">
+                {/* Team Score */}
+                <div className="space-y-2">
+                  <Label htmlFor={`team-score-${team.id}`} className="text-base font-semibold">
+                    Team Score (0-100 points)
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id={`team-score-${team.id}`}
+                      type="number"
+                      min="0"
+                      max="100"
+                      placeholder="Enter team score..."
+                      value={teamScore}
+                      onChange={(e) => setTeamScores({
+                        ...teamScores,
+                        [team.id]: e.target.value,
+                      })}
+                      className={`text-lg h-12 ${!teamScoreValid && teamScore !== '' ? 'border-red-500' : ''}`}
+                    />
+                    {teamScore && teamScoreValid && (
+                      <CheckCircle2 className="absolute right-3 top-3 h-6 w-6 text-green-500" />
+                    )}
+                    {teamScore && !teamScoreValid && (
+                      <AlertCircle className="absolute right-3 top-3 h-6 w-6 text-red-500" />
+                    )}
+                  </div>
+                  {teamScore && !teamScoreValid && (
+                    <p className="text-sm text-red-600">Please enter a valid score between 0 and 100</p>
+                  )}
+                </div>
+
+                <Separator />
+
+                {/* Individual Scores */}
+                <div className="space-y-4">
+                  <Label className="text-base font-semibold flex items-center space-x-2">
+                    <User className="h-4 w-4" />
+                    <span>Individual Scores (0-50 points each)</span>
+                  </Label>
+                  
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {team.participants.map((participant) => {
+                      const score = individualScores[team.id]?.[participant.id] ?? '';
+                      const scoreValid = validateIndividualScore(score);
+                      
+                      return (
+                        <div key={participant.id} className="space-y-2">
+                          <Label htmlFor={`individual-score-${participant.id}`} className="text-sm font-medium">
+                            {participant.name}
+                          </Label>
+                          <div className="relative">
+                            <Input
+                              id={`individual-score-${participant.id}`}
+                              type="number"
+                              min="0"
+                              max="50"
+                              placeholder="0-50"
+                              value={score}
+                              onChange={(e) => setIndividualScores(prev => ({
+                                ...prev,
+                                [team.id]: {
+                                  ...(prev[team.id] || {}),
+                                  [participant.id]: e.target.value,
+                                },
+                              }))}
+                              className={`${!scoreValid && score !== '' ? 'border-red-500' : ''}`}
+                            />
+                            {score && scoreValid && (
+                              <CheckCircle2 className="absolute right-3 top-2.5 h-4 w-4 text-green-500" />
+                            )}
+                            {score && !scoreValid && (
+                              <AlertCircle className="absolute right-3 top-2.5 h-4 w-4 text-red-500" />
+                            )}
+                          </div>
+                          {score && !scoreValid && (
+                            <p className="text-xs text-red-600">Score must be between 0 and 50</p>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {/* Submit Button */}
+      <div className="flex justify-center pt-6">
+        <Button
+          onClick={handleSubmit}
+          disabled={submitting || !isFormValid()}
+          size="lg"
+          className="w-full max-w-md h-12 text-lg font-semibold"
+        >
+          {submitting ? (
+            <>
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+              Submitting Scores...
+            </>
+          ) : (
+            <>
+              <Save className="h-5 w-5 mr-2" />
+              Submit All Scores
+            </>
+          )}
+        </Button>
+      </div>
+
+      {/* Form Status */}
+      {!isFormValid() && (
+        <Alert className="border-orange-200 bg-orange-50">
+          <AlertCircle className="h-4 w-4 text-orange-600" />
+          <AlertDescription className="text-orange-800">
+            Please fill in all required scores before submitting.
+          </AlertDescription>
+        </Alert>
+      )}
     </div>
   );
 }

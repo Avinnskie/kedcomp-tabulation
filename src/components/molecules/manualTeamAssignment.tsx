@@ -34,6 +34,16 @@ interface Team {
   }>;
 }
 
+interface TeamWithPosition {
+  teamId: number;
+  position: string;
+}
+
+interface SelectedTeam {
+  teamId: number;
+  position: string;
+}
+
 interface Room {
   id: number;
   name: string;
@@ -75,7 +85,7 @@ export default function ManualTeamAssignment() {
   // Dialog states for creating new assignment
   const [showNewAssignmentDialog, setShowNewAssignmentDialog] = useState(false);
   const [selectedRoom, setSelectedRoom] = useState<string>('');
-  const [selectedTeams, setSelectedTeams] = useState<number[]>([]);
+  const [selectedTeams, setSelectedTeams] = useState<SelectedTeam[]>([]);
 
   // Room management states
   const [showRoomDialog, setShowRoomDialog] = useState(false);
@@ -137,6 +147,13 @@ export default function ManualTeamAssignment() {
       return;
     }
 
+    // Validate positions are unique and all selected
+    const positions = selectedTeams.map(team => team.position).filter(p => p);
+    if (positions.length !== 4 || new Set(positions).size !== 4) {
+      toast.error('Please assign unique positions to all 4 teams');
+      return;
+    }
+
     try {
       const res = await fetch('/api/admin/manual-assignment', {
         method: 'POST',
@@ -144,7 +161,7 @@ export default function ManualTeamAssignment() {
         body: JSON.stringify({
           roundId: parseInt(selectedRound),
           roomId: parseInt(selectedRoom),
-          teams: selectedTeams.map(teamId => ({ teamId })),
+          teams: selectedTeams,
         }),
       });
 
@@ -338,42 +355,91 @@ export default function ManualTeamAssignment() {
                     </Select>
                   </div>
 
-                  {/* Team Selection */}
+                  {/* Team Selection with Position */}
                   <div>
-                    <Label>Select Teams (Choose exactly 4)</Label>
-                    <div className="grid grid-cols-1 gap-2 max-h-60 overflow-y-auto">
-                      {availableTeams.map(team => (
-                        <div key={team.id} className="flex items-center space-x-2">
-                          <input
-                            type="checkbox"
-                            id={`team-${team.id}`}
-                            checked={selectedTeams.includes(team.id)}
-                            onChange={e => {
-                              if (e.target.checked) {
-                                if (selectedTeams.length < 4) {
-                                  setSelectedTeams([...selectedTeams, team.id]);
+                    <Label>Select Teams and Assign Positions (Choose exactly 4)</Label>
+                    <div className="grid grid-cols-1 gap-3 max-h-60 overflow-y-auto">
+                      {availableTeams.map(team => {
+                        const selectedTeam = selectedTeams.find(st => st.teamId === team.id);
+                        const isSelected = !!selectedTeam;
+                        const usedPositions = selectedTeams.map(st => st.position).filter(p => p);
+                        
+                        return (
+                          <div key={team.id} className="flex items-start space-x-3 p-2 border rounded">
+                            <input
+                              type="checkbox"
+                              id={`team-${team.id}`}
+                              checked={isSelected}
+                              onChange={e => {
+                                if (e.target.checked) {
+                                  if (selectedTeams.length < 4) {
+                                    setSelectedTeams([...selectedTeams, { teamId: team.id, position: '' }]);
+                                  }
+                                } else {
+                                  setSelectedTeams(selectedTeams.filter(st => st.teamId !== team.id));
                                 }
-                              } else {
-                                setSelectedTeams(selectedTeams.filter(id => id !== team.id));
-                              }
-                            }}
-                            disabled={selectedTeams.length >= 4 && !selectedTeams.includes(team.id)}
-                          />
-                          <label htmlFor={`team-${team.id}`} className="flex-1 text-sm">
-                            <strong>{team.name}</strong>
-                            {team.institution && (
-                              <span className="text-muted-foreground"> - {team.institution}</span>
-                            )}
-                            <div className="text-xs text-muted-foreground">
-                              {team.participants.map(p => p.name).join(', ')}
+                              }}
+                              disabled={selectedTeams.length >= 4 && !isSelected}
+                              className="mt-1"
+                            />
+                            <div className="flex-1 space-y-2">
+                              <label htmlFor={`team-${team.id}`} className="text-sm cursor-pointer">
+                                <strong>{team.name}</strong>
+                                {team.institution && (
+                                  <span className="text-muted-foreground"> - {team.institution}</span>
+                                )}
+                                <div className="text-xs text-muted-foreground">
+                                  {team.participants.map(p => p.name).join(', ')}
+                                </div>
+                              </label>
+                              
+                              {isSelected && (
+                                <div className="w-full">
+                                  <Select
+                                    value={selectedTeam?.position || ''}
+                                    onValueChange={(position) => {
+                                      setSelectedTeams(selectedTeams.map(st => 
+                                        st.teamId === team.id ? { ...st, position } : st
+                                      ));
+                                    }}
+                                  >
+                                    <SelectTrigger className="w-full h-8">
+                                      <SelectValue placeholder="Select position..." />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                      {['OG', 'OO', 'CG', 'CO'].map(position => (
+                                        <SelectItem 
+                                          key={position} 
+                                          value={position}
+                                          disabled={usedPositions.includes(position) && selectedTeam?.position !== position}
+                                        >
+                                          <div className="flex items-center gap-2">
+                                            <Badge className={`${positionColors[position as keyof typeof positionColors]} text-xs`}>
+                                              {position}
+                                            </Badge>
+                                            <span>
+                                              {position === 'OG' ? 'Opening Government' :
+                                               position === 'OO' ? 'Opening Opposition' :
+                                               position === 'CG' ? 'Closing Government' : 'Closing Opposition'}
+                                            </span>
+                                          </div>
+                                        </SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </div>
+                              )}
                             </div>
-                          </label>
-                        </div>
-                      ))}
+                          </div>
+                        );
+                      })}
                     </div>
-                    <p className="text-sm text-muted-foreground mt-2">
-                      Selected: {selectedTeams.length}/4 teams
-                    </p>
+                    <div className="text-sm text-muted-foreground mt-2 space-y-1">
+                      <p>Selected: {selectedTeams.length}/4 teams</p>
+                      {selectedTeams.length > 0 && (
+                        <p>Positions assigned: {selectedTeams.filter(st => st.position).length}/4</p>
+                      )}
+                    </div>
                   </div>
 
                   <div className="flex justify-end gap-2">
@@ -389,7 +455,11 @@ export default function ManualTeamAssignment() {
                     </Button>
                     <Button
                       onClick={handleCreateAssignment}
-                      disabled={!selectedRoom || selectedTeams.length !== 4}
+                      disabled={
+                        !selectedRoom || 
+                        selectedTeams.length !== 4 || 
+                        selectedTeams.filter(st => st.position).length !== 4
+                      }
                     >
                       <Save className="h-4 w-4 mr-2" />
                       Assign Teams

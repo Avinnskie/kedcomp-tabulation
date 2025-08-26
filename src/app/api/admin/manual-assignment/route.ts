@@ -134,6 +134,38 @@ export async function POST(req: NextRequest) {
       }, { status: 400 });
     }
 
+    // Validate teams array structure
+    const isValidTeamStructure = teams.every(team => 
+      team.hasOwnProperty('teamId') && 
+      (team.hasOwnProperty('position') || !team.position) // position can be empty for backward compatibility
+    );
+    
+    if (!isValidTeamStructure) {
+      return NextResponse.json({ 
+        error: 'Invalid teams array structure. Expected { teamId, position }' 
+      }, { status: 400 });
+    }
+
+    // Validate positions if provided
+    const positions = teams.map(team => team.position).filter(p => p);
+    if (positions.length > 0) {
+      // Check if positions are unique
+      if (new Set(positions).size !== positions.length) {
+        return NextResponse.json({ 
+          error: 'Duplicate positions detected. Each team must have a unique position.' 
+        }, { status: 400 });
+      }
+      
+      // Check if positions are valid
+      const validPositions = ['OG', 'OO', 'CG', 'CO'];
+      const invalidPositions = positions.filter(p => !validPositions.includes(p));
+      if (invalidPositions.length > 0) {
+        return NextResponse.json({ 
+          error: `Invalid positions: ${invalidPositions.join(', ')}. Valid positions are: ${validPositions.join(', ')}` 
+        }, { status: 400 });
+      }
+    }
+
     // Validate that all teams exist
     const teamIds = teams.map(team => team.teamId);
     const existingTeams = await prisma.team.findMany({
@@ -187,15 +219,22 @@ export async function POST(req: NextRequest) {
       });
 
       // Create team assignments with positions
-      const positions: DebatePosition[] = ['OG', 'OO', 'CG', 'CO'];
       const teamAssignments = [];
+      
+      // Use manual positions if all teams have positions, otherwise use default order
+      const useManualPositions = positions.length === 4;
+      const defaultPositions: DebatePosition[] = ['OG', 'OO', 'CG', 'CO'];
 
       for (let i = 0; i < teams.length; i++) {
+        const position = useManualPositions 
+          ? teams[i].position as DebatePosition
+          : defaultPositions[i];
+          
         const teamAssignment = await tx.teamAssignment.create({
           data: {
             roundAssignmentId: roundAssignment.id,
             teamId: teams[i].teamId,
-            position: positions[i]
+            position: position
           },
           include: {
             team: {
