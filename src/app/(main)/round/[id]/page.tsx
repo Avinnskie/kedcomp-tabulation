@@ -72,7 +72,7 @@ export default function RoundPage() {
   const validateIndividualScore = (score: string) => {
     if (score === '') return true; // Allow empty
     const num = Number(score);
-    return !isNaN(num) && num >= 0 && num <= 86; // ✅ max 86
+    return !isNaN(num) && num >= 0 && num <= 1000; // ✅ max 86
   };
 
   const isFormValid = () => {
@@ -285,7 +285,7 @@ export default function RoundPage() {
                               id={`individual-score-${participant.id}`}
                               type="number"
                               min="0"
-                              max="86"
+                              max="1000"
                               placeholder="0-86"
                               value={score}
                               onChange={e =>
