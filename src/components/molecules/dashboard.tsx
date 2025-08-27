@@ -28,33 +28,40 @@ export function Dashboard() {
     fetch('/api/dashboard/winners')
       .then(res => res.json())
       .then(data => {
+        // Deteksi apakah Grand Final sudah ada (berdasarkan grandFinalScore > 0)
+        const hasGrandFinal = data.topTeams?.[0]?.grandFinalScore > 0;
+        
         const finalWinners = [
           {
             id: 'Juara 1',
             name: data.topTeams[0]?.name,
             institution: data.topTeams[0]?.institution,
-            preliminary_score: data.topTeams[0]?.preliminaryScore,
+            score: hasGrandFinal ? data.topTeams[0]?.grandFinalScore : data.topTeams[0]?.preliminaryScore,
             total_score: data.topTeams[0]?.totalScore,
+            isGrandFinal: hasGrandFinal,
           },
           {
             id: 'Juara 2',
             name: data.topTeams[1]?.name,
             institution: data.topTeams[1]?.institution,
-            preliminary_score: data.topTeams[1]?.preliminaryScore,
+            score: hasGrandFinal ? data.topTeams[1]?.grandFinalScore : data.topTeams[1]?.preliminaryScore,
             total_score: data.topTeams[1]?.totalScore,
+            isGrandFinal: hasGrandFinal,
           },
           {
             id: 'Juara 3',
             name: data.topTeams[2]?.name,
             institution: data.topTeams[2]?.institution,
-            preliminary_score: data.topTeams[2]?.preliminaryScore,
+            score: hasGrandFinal ? data.topTeams[2]?.grandFinalScore : data.topTeams[2]?.preliminaryScore,
             total_score: data.topTeams[2]?.totalScore,
+            isGrandFinal: hasGrandFinal,
           },
           {
             id: 'Best Speaker',
             name: data.bestSpeaker?.name,
             institution: data.bestSpeaker?.institution,
             average: data.bestSpeaker?.average,
+            isGrandFinal: hasGrandFinal,
           },
         ];
         setWinners(finalWinners);
@@ -79,7 +86,9 @@ export function Dashboard() {
     },
     {
       title: 'Leaderboard',
-      description: 'Top 3 Teams & Best Speaker based on Preliminary Rounds',
+      description: winners.length > 0 && winners[0]?.isGrandFinal 
+        ? 'Top 3 Teams & Best Speaker based on Grand Final Results'
+        : 'Top 3 Teams & Best Speaker based on Preliminary Rounds',
       icon: <Medal className="h-10 w-10 text-neutral-600" />,
       content: (
         <Table className={'mt-2'}>
@@ -88,7 +97,9 @@ export function Dashboard() {
               <TableHead className="w-[130px]">Juara</TableHead>
               <TableHead>Team Name</TableHead>
               <TableHead>Institution</TableHead>
-              <TableHead className="text-right">Preliminary Score</TableHead>
+              <TableHead className="text-right">
+                {winners.length > 0 && winners[0]?.isGrandFinal ? 'Grand Final Score' : 'Preliminary Score'}
+              </TableHead>
               <TableHead className="text-right">Total Score</TableHead>
             </TableRow>
           </TableHeader>
@@ -110,7 +121,7 @@ export function Dashboard() {
                   </TableCell>
                   <TableCell>{w.name}</TableCell>
                   <TableCell>{w.institution}</TableCell>
-                  <TableCell className="text-right">{w.preliminary_score ?? '-'}</TableCell>
+                  <TableCell className="text-right">{w.score ?? '-'}</TableCell>
                   <TableCell className="text-right">{w.total_score ?? w.average ?? '-'}</TableCell>
                 </TableRow>
               );

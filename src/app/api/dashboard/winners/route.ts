@@ -13,7 +13,7 @@ export async function GET() {
       },
     });
 
-    // Preliminary rounds (1, 2, 3) untuk menentukan ranking utama
+    // Preliminary rounds (1, 2, 3) untuk Best Speaker
     const preliminaryRounds = rounds.filter(r => r.number >= 1 && r.number <= 3);
     const preliminaryRoundIds = preliminaryRounds.map(r => r.id);
     const grandFinalRound = rounds.find(r => r.number === 6);
@@ -22,56 +22,86 @@ export async function GET() {
     const preliminaryScores = individualScores.filter(s => preliminaryRoundIds.includes(s.roundId));
     const grandFinalScores = individualScores.filter(s => s.roundId === grandFinalRound?.id);
 
-    // Hitung skor preliminary dan Grand Final untuk tiap tim (INDIVIDUAL only)
-    const teamMap: Record<
-      number,
-      {
-        name: string;
-        institution: string;
-        preliminaryScore: number;
-        grandFinalScore: number;
-        totalScore: number;
+    // Untuk dashboard, kita ambil ranking dari Grand Final jika ada
+    let topTeams = [];
+    
+    if (grandFinalRound && grandFinalScores.length > 0) {
+      // Jika Grand Final sudah ada, gunakan hasil Grand Final
+      const grandFinalTeamMap: Record<number, { name: string; institution: string; grandFinalScore: number; totalScore: number }> = {};
+      
+      // Hitung skor Grand Final untuk tiap tim
+      for (const score of grandFinalScores) {
+        if (!score.teamId) continue;
+        const key = score.teamId;
+        if (!grandFinalTeamMap[key]) {
+          grandFinalTeamMap[key] = {
+            name: score.team.name,
+            institution: score.team.institution || score.team.name || 'Unknown',
+            grandFinalScore: 0,
+            totalScore: 0,
+          };
+        }
+        grandFinalTeamMap[key].grandFinalScore += score.value;
       }
-    > = {};
-
-    // Hitung skor preliminary (untuk ranking utama)
-    for (const score of preliminaryScores) {
-      if (!score.teamId) continue;
-      const key = score.teamId;
-      if (!teamMap[key]) {
-        teamMap[key] = {
-          name: score.team.name,
-          institution: score.team.institution || score.team.name || 'Unknown',
-          preliminaryScore: 0,
+      
+      // Hitung total score dari semua rounds untuk tim yang masuk Grand Final
+      for (const score of individualScores) {
+        if (!score.teamId) continue;
+        const key = score.teamId;
+        if (grandFinalTeamMap[key]) {
+          grandFinalTeamMap[key].totalScore += score.value;
+        }
+      }
+      
+      // Ranking berdasarkan Grand Final score
+      topTeams = Object.entries(grandFinalTeamMap)
+        .map(([id, data]) => ({
+          teamId: Number(id),
+          ...data,
+          preliminaryScore: Math.round(data.grandFinalScore), // Use Grand Final as preliminary for display
+          grandFinalScore: Math.round(data.grandFinalScore),
+          totalScore: Math.round(data.totalScore),
+        }))
+        .sort((a, b) => b.grandFinalScore - a.grandFinalScore)
+        .slice(0, 3);
+    } else {
+      // Fallback ke preliminary ranking jika Grand Final belum ada
+      const teamMap: Record<number, { name: string; institution: string; preliminaryScore: number; totalScore: number }> = {};
+      
+      for (const score of preliminaryScores) {
+        if (!score.teamId) continue;
+        const key = score.teamId;
+        if (!teamMap[key]) {
+          teamMap[key] = {
+            name: score.team.name,
+            institution: score.team.institution || score.team.name || 'Unknown',
+            preliminaryScore: 0,
+            totalScore: 0,
+          };
+        }
+        teamMap[key].preliminaryScore += score.value;
+      }
+      
+      // Hitung total score
+      for (const score of individualScores) {
+        if (!score.teamId) continue;
+        const key = score.teamId;
+        if (teamMap[key]) {
+          teamMap[key].totalScore += score.value;
+        }
+      }
+      
+      topTeams = Object.entries(teamMap)
+        .map(([id, data]) => ({
+          teamId: Number(id),
+          ...data,
+          preliminaryScore: Math.round(data.preliminaryScore),
           grandFinalScore: 0,
-          totalScore: 0,
-        };
-      }
-      teamMap[key].preliminaryScore += score.value;
-      teamMap[key].totalScore += score.value;
+          totalScore: Math.round(data.totalScore),
+        }))
+        .sort((a, b) => b.preliminaryScore - a.preliminaryScore)
+        .slice(0, 3);
     }
-
-    // Tambahkan skor Grand Final jika ada
-    for (const score of grandFinalScores) {
-      if (!score.teamId) continue;
-      const key = score.teamId;
-      if (teamMap[key]) {
-        teamMap[key].grandFinalScore += score.value;
-        teamMap[key].totalScore += score.value;
-      }
-    }
-
-    // Ranking berdasarkan skor preliminary (bukan Grand Final)
-    const topTeams = Object.entries(teamMap)
-      .map(([id, data]) => ({
-        teamId: Number(id),
-        ...data,
-        preliminaryScore: Math.round(data.preliminaryScore),
-        grandFinalScore: Math.round(data.grandFinalScore),
-        totalScore: Math.round(data.totalScore),
-      }))
-      .sort((a, b) => b.preliminaryScore - a.preliminaryScore) // Sort berdasarkan preliminary score
-      .slice(0, 3);
 
     // Best speaker - menggunakan skor preliminary yang sudah ada
     
