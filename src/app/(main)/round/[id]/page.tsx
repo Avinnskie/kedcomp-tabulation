@@ -63,17 +63,16 @@ export default function RoundPage() {
     fetchData();
   }, [id, router]);
 
-  // Validation functions
   const validateTeamScore = (score: string) => {
     if (score === '') return true; // Allow empty
     const num = Number(score);
-    return !isNaN(num) && num >= 0 && num <= 100;
+    return !isNaN(num) && num >= 0 && num <= 3; // ✅ max 3
   };
 
   const validateIndividualScore = (score: string) => {
     if (score === '') return true; // Allow empty
     const num = Number(score);
-    return !isNaN(num) && num >= 0 && num <= 50;
+    return !isNaN(num) && num >= 0 && num <= 86; // ✅ max 86
   };
 
   const isFormValid = () => {
@@ -83,7 +82,7 @@ export default function RoundPage() {
       if (!teamScore || !validateTeamScore(teamScore)) {
         return false;
       }
-      
+
       for (const participant of team.team.participants) {
         const individualScore = individualScores[team.team.id]?.[participant.id];
         if (!individualScore || !validateIndividualScore(individualScore)) {
@@ -141,10 +140,10 @@ export default function RoundPage() {
   // Helper function to get position color
   const getPositionColor = (position: string) => {
     const colors = {
-      'OG': 'bg-blue-100 text-blue-800 border-blue-300',
-      'OO': 'bg-green-100 text-green-800 border-green-300', 
-      'CG': 'bg-orange-100 text-orange-800 border-orange-300',
-      'CO': 'bg-red-100 text-red-800 border-red-300',
+      OG: 'bg-blue-100 text-blue-800 border-blue-300',
+      OO: 'bg-green-100 text-green-800 border-green-300',
+      CG: 'bg-orange-100 text-orange-800 border-orange-300',
+      CO: 'bg-red-100 text-red-800 border-red-300',
     };
     return colors[position as keyof typeof colors] || 'bg-gray-100 text-gray-800 border-gray-300';
   };
@@ -154,7 +153,7 @@ export default function RoundPage() {
       <div className="container mx-auto p-6 max-w-4xl">
         <div className="animate-pulse space-y-6">
           <div className="h-8 bg-gray-300 rounded w-1/2"></div>
-          {[1,2,3,4].map(i => (
+          {[1, 2, 3, 4].map(i => (
             <Card key={i}>
               <CardHeader className="h-20 bg-gray-200"></CardHeader>
               <CardContent className="h-32 bg-gray-100"></CardContent>
@@ -164,7 +163,7 @@ export default function RoundPage() {
       </div>
     );
   }
-  
+
   if (!data) {
     return (
       <div className="container mx-auto p-6 max-w-4xl">
@@ -182,9 +181,7 @@ export default function RoundPage() {
     <div className="container mx-auto p-6 max-w-4xl space-y-6">
       {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold text-gray-900">
-          Judge Scoring Panel
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900">Judge Scoring Panel</h1>
         <div className="flex items-center justify-center space-x-2 text-lg">
           <Badge variant="outline" className="text-base px-3 py-1">
             {data.round.name}
@@ -200,7 +197,8 @@ export default function RoundPage() {
       <Alert>
         <CheckCircle2 className="h-4 w-4" />
         <AlertDescription>
-          Please score each team and individual participant. Team scores range from 0-100, individual scores range from 0-50.
+          Please score each team and individual participant. Team scores range from 0-100,
+          individual scores range from 0-50.
         </AlertDescription>
       </Alert>
 
@@ -209,15 +207,13 @@ export default function RoundPage() {
         {data.teamAssignments.map(({ team, position }) => {
           const teamScore = teamScores[team.id] ?? '';
           const teamScoreValid = validateTeamScore(teamScore);
-          
+
           return (
             <Card key={team.id} className="overflow-hidden">
               <CardHeader className={`${getPositionColor(position)} border-b`}>
                 <CardTitle className="flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <Badge className={`${getPositionColor(position)} border`}>
-                      {position}
-                    </Badge>
+                    <Badge className={`${getPositionColor(position)} border`}>{position}</Badge>
                     <span className="text-xl font-bold">{team.name}</span>
                   </div>
                   <div className="text-sm font-normal opacity-75">
@@ -225,7 +221,7 @@ export default function RoundPage() {
                   </div>
                 </CardTitle>
               </CardHeader>
-              
+
               <CardContent className="p-6 space-y-6">
                 {/* Team Score */}
                 <div className="space-y-2">
@@ -237,13 +233,15 @@ export default function RoundPage() {
                       id={`team-score-${team.id}`}
                       type="number"
                       min="0"
-                      max="100"
+                      max="3"
                       placeholder="Enter team score..."
                       value={teamScore}
-                      onChange={(e) => setTeamScores({
-                        ...teamScores,
-                        [team.id]: e.target.value,
-                      })}
+                      onChange={e =>
+                        setTeamScores({
+                          ...teamScores,
+                          [team.id]: e.target.value,
+                        })
+                      }
                       className={`text-lg h-12 ${!teamScoreValid && teamScore !== '' ? 'border-red-500' : ''}`}
                     />
                     {teamScore && teamScoreValid && (
@@ -254,7 +252,9 @@ export default function RoundPage() {
                     )}
                   </div>
                   {teamScore && !teamScoreValid && (
-                    <p className="text-sm text-red-600">Please enter a valid score between 0 and 100</p>
+                    <p className="text-sm text-red-600">
+                      Please enter a valid score between 0 and 100
+                    </p>
                   )}
                 </div>
 
@@ -266,15 +266,18 @@ export default function RoundPage() {
                     <User className="h-4 w-4" />
                     <span>Individual Scores (0-50 points each)</span>
                   </Label>
-                  
+
                   <div className="grid gap-4 md:grid-cols-2">
-                    {team.participants.map((participant) => {
+                    {team.participants.map(participant => {
                       const score = individualScores[team.id]?.[participant.id] ?? '';
                       const scoreValid = validateIndividualScore(score);
-                      
+
                       return (
                         <div key={participant.id} className="space-y-2">
-                          <Label htmlFor={`individual-score-${participant.id}`} className="text-sm font-medium">
+                          <Label
+                            htmlFor={`individual-score-${participant.id}`}
+                            className="text-sm font-medium"
+                          >
                             {participant.name}
                           </Label>
                           <div className="relative">
@@ -282,16 +285,18 @@ export default function RoundPage() {
                               id={`individual-score-${participant.id}`}
                               type="number"
                               min="0"
-                              max="50"
-                              placeholder="0-50"
+                              max="86"
+                              placeholder="0-86"
                               value={score}
-                              onChange={(e) => setIndividualScores(prev => ({
-                                ...prev,
-                                [team.id]: {
-                                  ...(prev[team.id] || {}),
-                                  [participant.id]: e.target.value,
-                                },
-                              }))}
+                              onChange={e =>
+                                setIndividualScores(prev => ({
+                                  ...prev,
+                                  [team.id]: {
+                                    ...(prev[team.id] || {}),
+                                    [participant.id]: e.target.value,
+                                  },
+                                }))
+                              }
                               className={`${!scoreValid && score !== '' ? 'border-red-500' : ''}`}
                             />
                             {score && scoreValid && (
