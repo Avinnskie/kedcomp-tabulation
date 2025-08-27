@@ -13,54 +13,67 @@ export async function GET() {
       },
     });
 
+    // Preliminary rounds (1, 2, 3) untuk menentukan ranking utama
+    const preliminaryRounds = rounds.filter(r => r.number >= 1 && r.number <= 3);
+    const preliminaryRoundIds = preliminaryRounds.map(r => r.id);
     const grandFinalRound = rounds.find(r => r.number === 6);
+    
     const individualScores = allScores.filter(s => s.scoreType === 'INDIVIDUAL');
+    const preliminaryScores = individualScores.filter(s => preliminaryRoundIds.includes(s.roundId));
     const grandFinalScores = individualScores.filter(s => s.roundId === grandFinalRound?.id);
 
-    // Hitung skor Grand Final untuk tiap tim (INDIVIDUAL only)
+    // Hitung skor preliminary dan Grand Final untuk tiap tim (INDIVIDUAL only)
     const teamMap: Record<
       number,
       {
         name: string;
         institution: string;
+        preliminaryScore: number;
         grandFinalScore: number;
         totalScore: number;
       }
     > = {};
 
-    for (const score of individualScores) {
+    // Hitung skor preliminary (untuk ranking utama)
+    for (const score of preliminaryScores) {
       if (!score.teamId) continue;
       const key = score.teamId;
       if (!teamMap[key]) {
         teamMap[key] = {
           name: score.team.name,
           institution: score.team.institution || score.team.name || 'Unknown',
+          preliminaryScore: 0,
           grandFinalScore: 0,
           totalScore: 0,
         };
       }
-
+      teamMap[key].preliminaryScore += score.value;
       teamMap[key].totalScore += score.value;
+    }
 
-      if (score.roundId === grandFinalRound?.id) {
+    // Tambahkan skor Grand Final jika ada
+    for (const score of grandFinalScores) {
+      if (!score.teamId) continue;
+      const key = score.teamId;
+      if (teamMap[key]) {
         teamMap[key].grandFinalScore += score.value;
+        teamMap[key].totalScore += score.value;
       }
     }
 
+    // Ranking berdasarkan skor preliminary (bukan Grand Final)
     const topTeams = Object.entries(teamMap)
       .map(([id, data]) => ({
         teamId: Number(id),
         ...data,
+        preliminaryScore: Math.round(data.preliminaryScore),
         grandFinalScore: Math.round(data.grandFinalScore),
         totalScore: Math.round(data.totalScore),
       }))
-      .sort((a, b) => b.grandFinalScore - a.grandFinalScore)
+      .sort((a, b) => b.preliminaryScore - a.preliminaryScore) // Sort berdasarkan preliminary score
       .slice(0, 3);
 
-    // Best speaker - hanya dari preliminary rounds (1, 2, 3)
-    const preliminaryRounds = rounds.filter(r => r.number >= 1 && r.number <= 3);
-    const preliminaryRoundIds = preliminaryRounds.map(r => r.id);
-    const preliminaryScores = individualScores.filter(s => preliminaryRoundIds.includes(s.roundId));
+    // Best speaker - menggunakan skor preliminary yang sudah ada
     
     const speakerMap: Record<
       number,

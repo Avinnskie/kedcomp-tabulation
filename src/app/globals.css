@@ -125,3 +125,55 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Mobile responsive improvements */
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Smooth horizontal scrolling for mobile */
+  .smooth-scroll {
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Better table responsiveness */
+  .mobile-table {
+    font-size: 0.75rem;
+  }
+  
+  @media (min-width: 640px) {
+    .mobile-table {
+      font-size: 0.875rem;
+    }
+  }
+  
+  /* Sticky columns for mobile tables */
+  .sticky-col {
+    position: sticky;
+    background: inherit;
+    z-index: 10;
+  }
+  
+  /* Mobile-first breakpoints for better mobile experience */
+  @media (max-width: 639px) {
+    .mobile-compact {
+      padding-left: 0.5rem;
+      padding-right: 0.5rem;
+    }
+    
+    .mobile-text-sm {
+      font-size: 0.75rem;
+      line-height: 1rem;
+    }
+    
+    .mobile-gap-sm {
+      gap: 0.5rem;
+    }
+  }
+}

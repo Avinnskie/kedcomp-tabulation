@@ -27,7 +27,23 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
   const pathname = usePathname();
 
   useEffect(() => {
-    setOpen(false); // tutup sidebar saat halaman berubah
+    // Tutup sidebar saat halaman berubah di mobile
+    const handleResize = () => {
+      if (window.innerWidth < 768) {
+        setOpen(false);
+      }
+    };
+    
+    // Set initial state based on screen size
+    handleResize();
+    
+    // Close sidebar on route change for mobile
+    if (window.innerWidth < 768) {
+      setOpen(false);
+    }
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
   }, [pathname]);
 
   const handleLogout = async () => {
@@ -66,8 +82,8 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
   return (
     <div
       className={cn(
-        'flex w-full flex-1 flex-col overflow-hidden rounded-md border border-neutral-500 md:flex-row dark:border-neutral-700 dark:bg-neutral-800',
-        'min-h-screen'
+        'flex w-full flex-1 flex-col overflow-hidden md:rounded-md border border-neutral-500 md:flex-row dark:border-neutral-700 dark:bg-neutral-800',
+        'min-h-screen relative'
       )}
     >
       <Sidebar open={open} setOpen={setOpen}>
@@ -200,12 +216,23 @@ export const SidebarComponent = ({ children }: SidebarComponentProps) => {
 
       <div
         className={cn(
-          'w-full px-2 transition-all duration-300',
+          'w-full transition-all duration-300 flex-1',
+          'px-2 sm:px-4 md:px-2',
           open ? 'md:ml-[200px]' : 'md:ml-[64px]'
         )}
       >
-        {children}
+        <div className="min-h-screen">
+          {children}
+        </div>
       </div>
+      
+      {/* Mobile overlay */}
+      {open && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-30 md:hidden"
+          onClick={() => setOpen(false)}
+        />
+      )}
     </div>
   );
 };

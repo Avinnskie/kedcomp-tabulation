@@ -2,11 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { ChevronsUp, ChevronsDown, Repeat, Loader2 } from 'lucide-react';
+import { ChevronsUp, ChevronsDown, Repeat, Loader2, Search } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { toast } from 'sonner';
 import { useSession } from 'next-auth/react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 type TeamTabulation = {
   teamId: number;
@@ -46,6 +47,11 @@ export default function TabulationPage() {
   const [quarterFinalComplete, setQuarterFinalComplete] = useState(false);
   const [canGenerateSemi, setCanGenerateSemi] = useState(false);
   const [fixingSemi, setFixingSemi] = useState(false);
+  const [searchPrelim, setSearchPrelim] = useState('');
+  const [searchQuarter, setSearchQuarter] = useState('');
+  const [searchBreak, setSearchBreak] = useState('');
+  const [searchGrandFinal, setSearchGrandFinal] = useState('');
+  const [searchIndividual, setSearchIndividual] = useState('');
 
   const { data: session } = useSession();
   const isAdmin = session?.user?.role === 'ADMIN';
@@ -165,41 +171,88 @@ export default function TabulationPage() {
     }
   };
 
+  // Filter functions
+  const filterTeamData = (data: TeamTabulation[], search: string) => {
+    if (!search.trim()) return data;
+    return data.filter(team => 
+      team.teamName.toLowerCase().includes(search.toLowerCase())
+    );
+  };
+
+  const filterSpeakerData = (data: SpeakerTabulation[], search: string) => {
+    if (!search.trim()) return data;
+    return data.filter(speaker => 
+      speaker.speakerName.toLowerCase().includes(search.toLowerCase()) ||
+      speaker.teamName.toLowerCase().includes(search.toLowerCase())
+    );
+  };
+
   if (loading) return <div className="p-4">Loading...</div>;
 
   const grandFinalTeams = [...breakData]
     .sort((a, b) => (b.totalPoints === a.totalPoints ? b.totalTeamScore - a.totalTeamScore : b.totalPoints - a.totalPoints))
     .slice(0, 4);
 
+  // Filtered data
+  const filteredPrelimData = filterTeamData(prelimData, searchPrelim);
+  const filteredQuarterData = filterTeamData(quarterData, searchQuarter);
+  const filteredBreakData = filterTeamData(breakData, searchBreak);
+  const filteredGrandFinalData = filterTeamData(grandFinalData, searchGrandFinal);
+  const filteredIndividualData = filterSpeakerData(individualData, searchIndividual);
+
   return (
-    <div className="px-1 md:py-6">
-      <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-        <ChevronsUp className="text-green-600" /> Tabulation Score KEDCOMP <ChevronsDown className="text-red-600" />
+    <div className="p-2 sm:p-4 lg:p-6">
+      <h1 className="text-lg sm:text-xl lg:text-2xl font-bold mb-4 flex items-center gap-2">
+        <ChevronsUp className="text-green-600 w-4 h-4 sm:w-5 sm:h-5" /> 
+        <span className="flex-1">Tabulation Score KEDCOMP</span>
+        <ChevronsDown className="text-red-600 w-4 h-4 sm:w-5 sm:h-5" />
       </h1>
 
       <Tabs defaultValue="prelim">
-        <TabsList className="mb-4">
-          <TabsTrigger value="prelim">Preliminary</TabsTrigger>
-          <TabsTrigger value="quarter">Quarter Final</TabsTrigger>
-          <TabsTrigger value="break">Semi Final</TabsTrigger>
-          <TabsTrigger value="grandfinal">Grand Final</TabsTrigger>
-          <TabsTrigger value="individual">Speaker</TabsTrigger>
+        <TabsList className="mb-4 grid w-full grid-cols-2 sm:grid-cols-5 h-auto">
+          <TabsTrigger value="prelim" className="text-xs sm:text-sm px-2 py-2">Preliminary</TabsTrigger>
+          <TabsTrigger value="quarter" className="text-xs sm:text-sm px-2 py-2">Quarter Final</TabsTrigger>
+          <TabsTrigger value="break" className="text-xs sm:text-sm px-2 py-2">Semi Final</TabsTrigger>
+          <TabsTrigger value="grandfinal" className="text-xs sm:text-sm px-2 py-2">Grand Final</TabsTrigger>
+          <TabsTrigger value="individual" className="text-xs sm:text-sm px-2 py-2 col-span-2 sm:col-span-1">Speaker</TabsTrigger>
         </TabsList>
 
         <TabsContent value="prelim">
-          <TeamTabulationTable data={prelimData} prefix="Preliminary" />
+          <div className="mb-4">
+            <div className="relative w-full max-w-sm sm:max-w-md">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cari tim..."
+                value={searchPrelim}
+                onChange={(e) => setSearchPrelim(e.target.value)}
+                className="pl-10 text-sm"
+              />
+            </div>
+          </div>
+          <TeamTabulationTable data={filteredPrelimData} prefix="Preliminary" />
         </TabsContent>
 
         <TabsContent value="quarter">
-          <h2 className="text-xl font-bold mb-4">Quarter Final Bracket</h2>
-          <TeamTabulationTable data={quarterData} prefix="Quarter Final" />
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h2 className="text-lg sm:text-xl font-bold">Quarter Final Bracket</h2>
+            <div className="relative w-full max-w-sm sm:max-w-md">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cari tim..."
+                value={searchQuarter}
+                onChange={(e) => setSearchQuarter(e.target.value)}
+                className="pl-10 text-sm"
+              />
+            </div>
+          </div>
+          <TeamTabulationTable data={filteredQuarterData} prefix="Quarter Final" />
           
           {isAdmin && (
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-semibold text-lg">Generate Semifinal Bracket</h3>
-                  <p className="text-sm text-gray-600 mt-1">
+            <div className="mt-6 p-3 sm:p-4 bg-gray-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+                <div className="flex-1">
+                  <h3 className="font-semibold text-base sm:text-lg">Generate Semifinal Bracket</h3>
+                  <p className="text-xs sm:text-sm text-gray-600 mt-1">
                     {quarterFinalComplete 
                       ? "Quarter final is complete. Ready to generate semifinal bracket."
                       : canGenerateSemi 
@@ -217,15 +270,20 @@ export default function TabulationPage() {
                 <Button 
                   onClick={generateSemiFinal} 
                   disabled={!canGenerateSemi || semiGenerating}
-                  className="ml-4"
+                  className="w-full sm:w-auto"
+                  size="sm"
                 >
                   {semiGenerating ? (
                     <>
                       <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Generating...
+                      <span className="hidden sm:inline">Generating...</span>
+                      <span className="sm:hidden">Gen...</span>
                     </>
                   ) : (
-                    'Generate Semifinal Bracket'
+                    <>
+                      <span className="hidden sm:inline">Generate Semifinal Bracket</span>
+                      <span className="sm:hidden">Generate Semifinal</span>
+                    </>
                   )}
                 </Button>
               </div>
@@ -234,28 +292,44 @@ export default function TabulationPage() {
         </TabsContent>
 
         <TabsContent value="break">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold">Semi Final Bracket</h2>
-            {isAdmin && (
-              <Button 
-                onClick={fixSemifinal} 
-                disabled={fixingSemi}
-                variant="outline"
-                className="ml-4"
-              >
-                {fixingSemi ? (
-                  <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    Fixing...
-                  </>
-                ) : (
-                  'Fix Semifinal Bracket'
-                )}
-              </Button>
-            )}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
+            <h2 className="text-lg sm:text-xl font-bold">Semi Final Bracket</h2>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+              <div className="relative w-full sm:w-auto sm:max-w-md">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Cari tim..."
+                  value={searchBreak}
+                  onChange={(e) => setSearchBreak(e.target.value)}
+                  className="pl-10 text-sm"
+                />
+              </div>
+              {isAdmin && (
+                <Button 
+                  onClick={fixSemifinal} 
+                  disabled={fixingSemi}
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-auto"
+                >
+                  {fixingSemi ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      <span className="hidden sm:inline">Fixing...</span>
+                      <span className="sm:hidden">Fix...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="hidden sm:inline">Fix Semifinal Bracket</span>
+                      <span className="sm:hidden">Fix Bracket</span>
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
           </div>
           
-          <TeamTabulationTable data={breakData} prefix="Semi Final" grandFinalTeams={grandFinalTeams} />
+          <TeamTabulationTable data={filteredBreakData} prefix="Semi Final" grandFinalTeams={grandFinalTeams} />
           
           {isAdmin && (
             <TooltipProvider>
@@ -277,13 +351,13 @@ export default function TabulationPage() {
           )}
           
           <div className="mt-6 border-t pt-4 space-y-4">
-            <h2 className="text-xl font-semibold mb-2">🎉 Teams Qualify for the Grand Final</h2>
-            <p className="text-sm text-gray-600 mb-3">
+            <h2 className="text-lg sm:text-xl font-semibold mb-2">🎉 Teams Qualify for the Grand Final</h2>
+            <p className="text-xs sm:text-sm text-gray-600 mb-3">
               Top 4 teams globally (berdasarkan total poin dan skor) dari hasil semifinal
             </p>
-            <ol className="list-decimal pl-6 space-y-1">
+            <ol className="list-decimal pl-4 sm:pl-6 space-y-1">
               {grandFinalTeams.map((team, i) => (
-                <li key={team.teamId} className="text-lg font-medium">
+                <li key={team.teamId} className="text-sm sm:text-lg font-medium break-words">
                   {team.teamName} {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '🎖️'}
                 </li>
               ))}
@@ -292,11 +366,33 @@ export default function TabulationPage() {
         </TabsContent>
 
         <TabsContent value="grandfinal">
-          <TeamTabulationTable data={grandFinalData} prefix="Grand Final" />
+          <div className="mb-4">
+            <div className="relative w-full max-w-sm sm:max-w-md">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cari tim..."
+                value={searchGrandFinal}
+                onChange={(e) => setSearchGrandFinal(e.target.value)}
+                className="pl-10 text-sm"
+              />
+            </div>
+          </div>
+          <TeamTabulationTable data={filteredGrandFinalData} prefix="Grand Final" />
         </TabsContent>
 
         <TabsContent value="individual">
-          <SpeakerTabulationTable data={individualData} />
+          <div className="mb-4">
+            <div className="relative w-full max-w-sm sm:max-w-md">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Cari speaker atau tim..."
+                value={searchIndividual}
+                onChange={(e) => setSearchIndividual(e.target.value)}
+                className="pl-10 text-sm"
+              />
+            </div>
+          </div>
+          <SpeakerTabulationTable data={filteredIndividualData} />
         </TabsContent>
       </Tabs>
     </div>
@@ -319,55 +415,58 @@ function TeamTabulationTable({
   const showMedals = prefix === 'Grand Final';
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full text-sm text-left border border-gray-200">
-        <thead className="bg-gray-100 text-gray-700 font-semibold">
-          <tr>
-            <th className="px-4 py-2 border text-center">#</th>
-            <th className="px-4 py-2 border">Tim</th>
-            {data[0]?.rounds.map((_, i) => (
-              <th key={i} className="px-4 py-2 border text-center">
-                {prefix} {i + 1}
-              </th>
-            ))}
-            <th className="px-4 py-2 border text-center">Point</th>
-            <th className="px-4 py-2 border text-center">Score</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((team, idx) => {
-            const isFinalist = highlightIds.includes(team.teamId);
-            const medal = showMedals
-              ? idx === 0
-                ? '🥇'
-                : idx === 1
-                ? '🥈'
-                : idx === 2
-                ? '🥉'
-                : ''
-              : '';
+    <div className="overflow-x-auto -mx-2 sm:mx-0">
+      <div className="inline-block min-w-full align-middle">
+        <table className="min-w-full text-xs sm:text-sm text-left border border-gray-200">
+          <thead className="bg-gray-100 text-gray-700 font-semibold">
+            <tr>
+              <th className="px-2 sm:px-4 py-2 border text-center sticky left-0 bg-gray-100 z-10">#</th>
+              <th className="px-2 sm:px-4 py-2 border sticky left-8 sm:left-12 bg-gray-100 z-10 min-w-[120px] sm:min-w-[150px]">Tim</th>
+              {data[0]?.rounds.map((_, i) => (
+                <th key={i} className="px-1 sm:px-2 py-2 border text-center min-w-[60px] sm:min-w-[80px]">
+                  <div className="text-xs sm:text-sm">{prefix}</div>
+                  <div className="text-xs">{i + 1}</div>
+                </th>
+              ))}
+              <th className="px-2 sm:px-4 py-2 border text-center min-w-[50px]">Victory Point</th>
+              <th className="px-2 sm:px-4 py-2 border text-center min-w-[50px]">Score</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((team, idx) => {
+              const isFinalist = highlightIds.includes(team.teamId);
+              const medal = showMedals
+                ? idx === 0
+                  ? '🥇'
+                  : idx === 1
+                  ? '🥈'
+                  : idx === 2
+                  ? '🥉'
+                  : ''
+                : '';
 
-            return (
-              <tr key={team.teamId} className={`hover:bg-gray-50 ${isFinalist ? 'bg-yellow-50 font-semibold' : ''}`}>
-                <td className="px-4 py-2 border text-center">{idx + 1}</td>
-                <td className="px-4 py-2 border">
-                  <span className="font-medium">
-                    {team.teamName} {medal}
-                  </span>
-                </td>
-                {team.rounds.map((r, i) => (
-                  <td key={i} className="px-2 py-1 border text-center leading-tight">
-                    <div className="font-medium">ke-{r.rank}</div>
-                    <div className="text-xs text-blue-600">{r.points} poin</div>
+              return (
+                <tr key={team.teamId} className={`hover:bg-gray-50 ${isFinalist ? 'bg-yellow-50 font-semibold' : ''}`}>
+                  <td className="px-2 sm:px-4 py-2 border text-center sticky left-0 bg-white z-10">{idx + 1}</td>
+                  <td className="px-2 sm:px-4 py-2 border sticky left-8 sm:left-12 bg-white z-10">
+                    <div className="font-medium text-xs sm:text-sm break-words">
+                      {team.teamName} {medal}
+                    </div>
                   </td>
-                ))}
-                <td className="px-4 py-2 border text-center font-bold text-blue-700">{team.totalPoints}</td>
-                <td className="px-4 py-2 border text-center">{team.totalTeamScore}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                  {team.rounds.map((r, i) => (
+                    <td key={i} className="px-1 sm:px-2 py-1 border text-center leading-tight">
+                      <div className="font-medium text-xs">ke-{r.rank}</div>
+                      <div className="text-[10px] sm:text-xs text-blue-600">{r.points}</div>
+                    </td>
+                  ))}
+                  <td className="px-2 sm:px-4 py-2 border text-center font-bold text-blue-700 text-xs sm:text-sm">{team.totalPoints}</td>
+                  <td className="px-2 sm:px-4 py-2 border text-center text-xs sm:text-sm">{team.totalTeamScore}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
@@ -376,38 +475,44 @@ function SpeakerTabulationTable({ data }: { data: SpeakerTabulation[] }) {
   const allRoundNames = Array.from(new Set(data.flatMap(s => s.scores.map(score => score.roundName))));
 
   return (
-    <div className="overflow-x-auto">
-      <table className="min-w-full border text-sm">
-        <thead className="bg-gray-100">
-          <tr>
-            <th className="px-4 py-2 border">#</th>
-            <th className="px-4 py-2 border">Speaker name</th>
-            <th className="px-4 py-2 border">Team</th>
-            {allRoundNames.map((roundName, idx) => (
-              <th key={idx} className="px-4 py-2 border text-center">
-                {roundName}
-              </th>
-            ))}
-            <th className="px-4 py-2 border">Rata-rata</th>
-          </tr>
-        </thead>
-        <tbody>
-          {data.map((speaker, idx) => {
-            const scoreMap = Object.fromEntries(speaker.scores.map(s => [s.roundName, s.value]));
-            return (
-              <tr key={speaker.speakerId} className="hover:bg-gray-50">
-                <td className="px-4 py-2 border text-center">{idx + 1}</td>
-                <td className="px-4 py-2 border font-medium">{speaker.speakerName}</td>
-                <td className="px-4 py-2 border">{speaker.teamName}</td>
-                {allRoundNames.map((rName, i) => (
-                  <td key={i} className="px-4 py-2 border text-center">{scoreMap[rName] ?? '-'}</td>
-                ))}
-                <td className="px-4 py-2 border text-center">{speaker.averageScore}</td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+    <div className="overflow-x-auto -mx-2 sm:mx-0">
+      <div className="inline-block min-w-full align-middle">
+        <table className="min-w-full border text-xs sm:text-sm">
+          <thead className="bg-gray-100">
+            <tr>
+              <th className="px-2 sm:px-4 py-2 border sticky left-0 bg-gray-100 z-10">#</th>
+              <th className="px-2 sm:px-4 py-2 border sticky left-8 sm:left-12 bg-gray-100 z-10 min-w-[120px] sm:min-w-[150px]">Speaker</th>
+              <th className="px-2 sm:px-4 py-2 border sticky left-32 sm:left-40 bg-gray-100 z-10 min-w-[100px] sm:min-w-[120px]">Team</th>
+              {allRoundNames.map((roundName, idx) => (
+                <th key={idx} className="px-1 sm:px-2 py-2 border text-center min-w-[60px] text-xs sm:text-sm">
+                  {roundName}
+                </th>
+              ))}
+              <th className="px-2 sm:px-4 py-2 border text-center min-w-[60px]">Avg</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.map((speaker, idx) => {
+              const scoreMap = Object.fromEntries(speaker.scores.map(s => [s.roundName, s.value]));
+              return (
+                <tr key={speaker.speakerId} className="hover:bg-gray-50">
+                  <td className="px-2 sm:px-4 py-2 border text-center sticky left-0 bg-white z-10">{idx + 1}</td>
+                  <td className="px-2 sm:px-4 py-2 border font-medium sticky left-8 sm:left-12 bg-white z-10">
+                    <div className="text-xs sm:text-sm break-words">{speaker.speakerName}</div>
+                  </td>
+                  <td className="px-2 sm:px-4 py-2 border sticky left-32 sm:left-40 bg-white z-10">
+                    <div className="text-xs sm:text-sm break-words">{speaker.teamName}</div>
+                  </td>
+                  {allRoundNames.map((rName, i) => (
+                    <td key={i} className="px-1 sm:px-2 py-2 border text-center text-xs sm:text-sm">{scoreMap[rName] ?? '-'}</td>
+                  ))}
+                  <td className="px-2 sm:px-4 py-2 border text-center font-semibold text-xs sm:text-sm">{speaker.averageScore}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
