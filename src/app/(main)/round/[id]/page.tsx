@@ -197,8 +197,8 @@ export default function RoundPage() {
       <Alert>
         <CheckCircle2 className="h-4 w-4" />
         <AlertDescription>
-          Please score each team and individual participant. Team scores range from 0-100,
-          individual scores range from 0-50.
+          Please score each team and individual participant. Team scores range from 0-3,
+          individual scores range from 0-86.
         </AlertDescription>
       </Alert>
 
@@ -226,7 +226,7 @@ export default function RoundPage() {
                 {/* Team Score */}
                 <div className="space-y-2">
                   <Label htmlFor={`team-score-${team.id}`} className="text-base font-semibold">
-                    Team Score (0-100 points)
+                    Team Score / Victory Point (0-3 points)
                   </Label>
                   <div className="relative">
                     <Input
@@ -253,7 +253,7 @@ export default function RoundPage() {
                   </div>
                   {teamScore && !teamScoreValid && (
                     <p className="text-sm text-red-600">
-                      Please enter a valid score between 0 and 100
+                      Please enter a valid score between 0 and 3
                     </p>
                   )}
                 </div>
@@ -264,7 +264,7 @@ export default function RoundPage() {
                 <div className="space-y-4">
                   <Label className="text-base font-semibold flex items-center space-x-2">
                     <User className="h-4 w-4" />
-                    <span>Individual Scores (0-50 points each)</span>
+                    <span>Individual Scores (0-86 points each)</span>
                   </Label>
 
                   <div className="grid gap-4 md:grid-cols-2">
@@ -307,7 +307,7 @@ export default function RoundPage() {
                             )}
                           </div>
                           {score && !scoreValid && (
-                            <p className="text-xs text-red-600">Score must be between 0 and 50</p>
+                            <p className="text-xs text-red-600">Score must be between 0 and 86</p>
                           )}
                         </div>
                       );
